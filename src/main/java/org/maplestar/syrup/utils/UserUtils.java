@@ -2,6 +2,9 @@ package org.maplestar.syrup.utils;
 
 import net.dv8tion.jda.api.entities.Guild;
 
+/**
+ * Utility class for JDA's {@link net.dv8tion.jda.api.entities.User}.
+ */
 public class UserUtils {
     /**
      * Attempts to fetch the username from the Discord API.

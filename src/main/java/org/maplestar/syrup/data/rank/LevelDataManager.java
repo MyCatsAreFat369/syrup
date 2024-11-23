@@ -10,14 +10,29 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides access to the level and XP of users for each guild.
+ */
 public class LevelDataManager {
     private final Logger logger = LoggerFactory.getLogger(LevelDataManager.class);
     private final DatabaseManager databaseManager;
 
+    /**
+     * Initializes the class
+     *
+     * @param databaseManager the database manager for database access
+     */
     public LevelDataManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
     }
 
+    /**
+     * Returns the {@link LevelData} for the user on the provided guild.
+     *
+     * @param user the user
+     * @param guild the guild
+     * @return the {@link LevelData} for the user. May be the default for new users or on database failure
+     */
     public LevelData getLevelData(User user, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT level, xp FROM Ranks WHERE user_id = ? AND guild_id = ?")) {
@@ -37,6 +52,13 @@ public class LevelDataManager {
         }
     }
 
+    /**
+     * Returns the {@link RankingData} for the user on the provided guild, which includes a rank relative to other users.
+     *
+     * @param user the user
+     * @param guild the guild
+     * @return the {@link RankingData} for the user. May be the default for new users or on database failure
+     */
     public RankingData getRankingData(User user, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) WHERE user_id = ?")) {
@@ -57,6 +79,16 @@ public class LevelDataManager {
         }
     }
 
+    /**
+     * Returns a list of the top users in the specified guild, limited to 10 entries per page and offset by (page * 10) - 10.
+     * <p>
+     * Guaranteed to only be empty if there is no data for the provided guild.
+     * If the page exceeds the bounds of the data, it is adjusted automatically
+     *
+     * @param guild the guild
+     * @param page the page, adjusted automatically to fit the bounds
+     * @return the list of users with their ranks. May be empty or contain less than 10 entries
+     */
     public List<RankingData> getTopUsers(Guild guild, int page) {
         if (page < 1) page = 1;
 
@@ -81,6 +113,13 @@ public class LevelDataManager {
         }
     }
 
+    /**
+     * Updates the level and XP for the user on the specified guild or inserts them into the database if necessary (upsert).
+     *
+     * @param user the user
+     * @param guild the guild
+     * @param levelData the new {@link LevelData}
+     */
     public void setLevelData(User user, Guild guild, LevelData levelData) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp")) {

@@ -7,15 +7,30 @@ import org.maplestar.syrup.listener.event.LevelChangeEvent;
 import java.util.List;
 
 // oh my god our own event???
+
+/**
+ * Listener that's called when the level of a user gets updated.
+ */
 public class LevelChangeListener {
     private final LevelRoleDataManager levelRoleDataManager;
     private final GuildSettingsManager guildSettingsManager;
 
+    /**
+     * Initializes the class.
+     *
+     * @param levelRoleDataManager the level role manager
+     * @param guildSettingsManager the guild settings manager
+     */
     public LevelChangeListener(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager) {
         this.levelRoleDataManager = levelRoleDataManager;
         this.guildSettingsManager = guildSettingsManager;
     }
 
+    /**
+     * Called when the level of a user gets updated.
+     *
+     * @param event the event that has been fired, see {@link LevelChangeEvent}
+     */
     public void onLevelChange(LevelChangeEvent event) {
         var guild = event.guild();
         var settings = guildSettingsManager.getSettings(guild);

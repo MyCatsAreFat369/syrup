@@ -11,14 +11,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Provides access to the level roles for each individual Discord guild, which can be obtained by increasing your level.
+ */
 public class LevelRoleDataManager {
     private final Logger logger = LoggerFactory.getLogger(LevelRoleDataManager.class);
     private final DatabaseManager databaseManager;
 
+    /**
+     * Initializes the class
+     *
+     * @param databaseManager the database manager for database access
+     */
     public LevelRoleDataManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
     }
 
+    /**
+     * A list of all level roles for the provided guild with their Discord role IDs and associated levels.
+     * <p>
+     * It is not guaranteed that the Discord roles with the IDs still exist.
+     *
+     * @param guild the guild
+     * @return a list of all level roles. May be empty or immutable
+     */
     public List<LevelRoleData> getLevelRoles(Guild guild) {
         List<LevelRoleData> levelRoles = new ArrayList<>();
 
@@ -39,6 +55,13 @@ public class LevelRoleDataManager {
         return levelRoles;
     }
 
+    /**
+     * Checks whether the provided role on the guild is a registered level role.
+     *
+     * @param role the role representing the level role
+     * @param guild the guild
+     * @return false if the role is not a level role or on database failure, otherwise true
+     */
     public boolean isLevelRole(Role role, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT * FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
@@ -52,6 +75,13 @@ public class LevelRoleDataManager {
         }
     }
 
+    /**
+     * Retrieves the level at which the provided level role on the guild should be obtained.
+     *
+     * @param role the Discord role representing the level role
+     * @param guild the guild
+     * @return an empty {@link Optional} if the role is not a level role or on database failure, otherwise containing the level
+     */
     public Optional<Integer> getLevel(Role role, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT level FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
@@ -71,6 +101,14 @@ public class LevelRoleDataManager {
         }
     }
 
+    /**
+     * Registers a level role to be obtained at the specified level on the guild.
+     *
+     * @param guild the guild
+     * @param levelRole the Discord role representing the level role
+     * @param level the level
+     * @return false if the update was unsuccessful or on database failure, otherwise true
+     */
     public boolean addLevelRole(Guild guild, Role levelRole, int level) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO LevelRoles (guild_id, role_id, level) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")) {
@@ -85,6 +123,13 @@ public class LevelRoleDataManager {
         }
     }
 
+    /**
+     * Removes a level role from the database so it can no longer be obtained.
+     *
+     * @param guild the guild
+     * @param levelRoleID the ID of the Discord role representing this level role
+     * @return false if the update was unsuccessful or on database failure, otherwise true
+     */
     public boolean removeLevelRole(Guild guild, long levelRoleID) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("DELETE FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {

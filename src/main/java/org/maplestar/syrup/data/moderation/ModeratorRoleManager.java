@@ -10,14 +10,30 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides access to the roles of moderators which should be allowed to access the bot's internal commands.
+ */
 public class ModeratorRoleManager {
     private final Logger logger = LoggerFactory.getLogger(ModeratorRoleManager.class);
     private final DatabaseManager databaseManager;
 
+    /**
+     * Initializes the class
+     *
+     * @param databaseManager the database manager for database access
+     */
     public ModeratorRoleManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
     }
 
+    /**
+     * A list of all roles which should be allowed to access the bot's internal commands on the specified guild.
+     * <p>
+     * It is not guaranteed that the Discord roles with the IDs still exist.
+     *
+     * @param guild the guild
+     * @return a list of all moderator roles. May be empty or immutable
+     */
     public List<Long> getModeratorRoles(Guild guild) {
         List<Long> moderatorRoles = new ArrayList<>();
 
@@ -38,6 +54,13 @@ public class ModeratorRoleManager {
         return moderatorRoles;
     }
 
+    /**
+     * Checks whether the provided role is a moderator role that should be able to access internal commands on the specified guild.
+     *
+     * @param role the role
+     * @param guild the guilds
+     * @return false if the role is not a moderator role or on database failure, otherwise true
+     */
     public boolean isModeratorRole(Role role, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT * FROM ModeratorRoles WHERE guild_id = ? AND role_id = ?")) {
@@ -51,6 +74,13 @@ public class ModeratorRoleManager {
         }
     }
 
+    /**
+     * Registers the provided role as a moderator for the guild.
+     *
+     * @param role the role
+     * @param guild the guild
+     * @return false if the update was unsuccessful or on database failure, otherwise true
+     */
     public boolean addModeratorRole(Role role, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO ModeratorRoles (guild_id, role_id) VALUES (?, ?) ON CONFLICT DO NOTHING")) {
@@ -64,6 +94,13 @@ public class ModeratorRoleManager {
         }
     }
 
+    /**
+     * Removes the provided role as a moderator for the guild.
+     *
+     * @param roleID the Discord role's role ID. The underlying role may no longer exist
+     * @param guild the guild
+     * @return false if the update was unsuccessful or on database failure, otherwise true
+     */
     public boolean removeModeratorRole(long roleID, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("DELETE FROM ModeratorRoles WHERE guild_id = ? AND role_id = ?")) {
