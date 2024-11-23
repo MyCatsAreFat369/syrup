@@ -11,14 +11,29 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides access to the channels for each individual Discord guild where XP can't be gained.
+ */
 public class BlockDataManager {
     private final Logger logger = LoggerFactory.getLogger(BlockDataManager.class);
     private final DatabaseManager databaseManager;
 
+    /**
+     * Initializes the class.
+     *
+     * @param databaseManager the database manager for database access
+     */
     public BlockDataManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
     }
 
+    /**
+     * Checks whether a channel in a specific guild has been blocklisted from the level system.
+     *
+     * @param channel the channel
+     * @param guild the guild
+     * @return false if the channel has not been blocklisted or on database failure, otherwise true
+     */
     public boolean isBlocked(Channel channel, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT * FROM BlockedChannels WHERE guild_id = ? AND channel_id = ?")) {
@@ -32,6 +47,14 @@ public class BlockDataManager {
         }
     }
 
+    /**
+     * A list of all channel IDs for a given guild which have been blocklisted from the level system.
+     * <p>
+     * It is not guaranteed that the channel still exists in the Discord guild.
+     *
+     * @param guild the guild
+     * @return a list of all channel ids. May be empty or immutable
+     */
     public List<Long> getBlockedChannelIds(Guild guild) {
         List<Long> blockedChannels = new ArrayList<>();
 
@@ -52,6 +75,14 @@ public class BlockDataManager {
         return blockedChannels;
     }
 
+    /**
+     * Updates the block status of the provided channel in the guild.
+     *
+     * @param channelID the channel's ID (the channel may no longer exist in the Discord guild)
+     * @param guild the guild
+     * @param blocked true if XP gain should be disabled in the provided channel, otherwise false
+     * @return false if the update was unsuccessful or on database failure, otherwise true
+     */
     public boolean setBlocked(long channelID, Guild guild, boolean blocked) {
         try (var connection = databaseManager.getConnection()) {
             if (blocked) {

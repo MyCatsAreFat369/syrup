@@ -17,9 +17,17 @@ import org.maplestar.syrup.listener.LevelChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The entry point of the app.
+ */
 public class Main {
     private final static Logger logger = LoggerFactory.getLogger(Main.class);
-    
+
+    /**
+     * The entry point of the app.
+     *
+     * @param args the arguments (assumed to be empty)
+     */
     public static void main(String[] args) {
         var config = Config.load();
 
