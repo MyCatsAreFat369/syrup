@@ -31,7 +31,8 @@ public class LevelChangeListener {
      *
      * @param event the event that has been fired, see {@link LevelChangeEvent}
      */
-    public void onLevelChange(LevelChangeEvent event) {
+    public void onLevelChange(LevelChangeEvent event)
+    {
         var guild = event.guild();
         var settings = guildSettingsManager.getSettings(guild);
         var roles = levelRoleDataManager.getLevelRoles(guild);
@@ -52,8 +53,37 @@ public class LevelChangeListener {
                 .filter(levelRole -> minLevel < levelRole.level() && levelRole.level() <= maxLevel)
                 .toList();
 
-        // if level change doesn't actually affect any roles, ignore the code that follows
-        if (affectedRoles.isEmpty()) return;
+        // if level change doesn't actually affect any roles, checks if user doesn't have any roles below minLevel
+        // if removeOldRoles then only the largest such existing role will be added.
+        if (affectedRoles.isEmpty())
+        {
+            var lowerRoles = roles.stream()
+                    .filter(levelRole -> levelRole.level() <= minLevel)
+                    .toList();
+
+            // guess we didn't have any lower roles either, returns
+            if(lowerRoles.isEmpty()) return;
+
+            // add all lower roles because removeOldRoles is false
+            if(!settings.removeOldRoles())
+            {
+                var lowerRolesList = lowerRoles.stream()
+                        .map(levelRole -> guild.getRoleById(levelRole.roleID()))
+                        .toList();
+                guild.modifyMemberRoles(member, lowerRolesList, null).queue();
+                return;
+            }
+
+            // get the max lower role level and add that role to member
+            var maxLevelRole = lowerRoles.getFirst();
+            for(var levelRole : lowerRoles)
+            {
+                if(levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
+            }
+            guild.modifyMemberRoles(member, List.of(guild.getRoleById(maxLevelRole.roleID())), null).queue();
+
+            return;
+        }
 
         // removes ALL old roles (if removeOldRoles)
         if (settings.removeOldRoles()) {
