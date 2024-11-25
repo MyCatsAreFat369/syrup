@@ -106,14 +106,23 @@ public class LevelRoleCommand extends AbstractCommand {
         var role = event.getOption("role").getAsRole();
         int level = event.getOption("level").getAsInt();
 
-        // TODO: Implement
+        var roles = levelRoleDataManager.getLevelRoles(event.getGuild());
 
-        String roleID = role.getId();
+        // if role already exists, cancels function
+        for (var levelRole : roles)
+        {
+            if(levelRole.roleID() != role.getIdLong()) continue;
 
-        // do levelrole create logic
+            event.getHook().editOriginal("Level role <@&" + role.getId() + "> already exists " +
+                    "(at **Level " + levelRole.level() + "**)")
+                    .queue();
+            return;
+        }
+
+        levelRoleDataManager.addLevelRole(event.getGuild(), role, level);
 
         event.getHook().editOriginal(
-                "Successfully assigned <@&" + roleID + "> to level **" + level + "**. Make sure I have" +
+                "Successfully assigned <@&" + role.getId() + "> to level **" + level + "**. Make sure I have" +
                 "permission to add this role to members. Members who are missing this role will receive it the next" +
                 "time they level up (if applicable).")
                 .queue();
@@ -122,14 +131,20 @@ public class LevelRoleCommand extends AbstractCommand {
     private void remove(SlashCommandInteractionEvent event) {
         var role = event.getOption("role").getAsRole();
 
-        // TODO: Implement
 
-        String roleID = role.getId();
-        int level = 0; // TODO: make this get the actual level
+        var tryGetLevel = levelRoleDataManager.getLevel(role, event.getGuild());
+        if(!tryGetLevel.isPresent())
+        {
+            event.getHook().editOriginal("Level role <@&" + role.getId() + "> doesn't exist and thus can't be deleted.")
+                    .queue();
+            return;
+        }
+        int level = tryGetLevel.get();
 
-        // do levelrole remove logic
+        levelRoleDataManager.removeLevelRole(event.getGuild(), role.getIdLong());
 
-        event.getHook().editOriginal("Successfully removed <@&" + roleID + "> from the list of level roles. It was pointing to level" + "**" + level + "**.").queue();
+        event.getHook().editOriginal("Successfully removed <@&" + role.getId() + "> from the list of level roles. It was pointing to level" + "**" + level + "**.")
+                .queue();
     }
 
     private void listRoles(SlashCommandInteractionEvent event) {
