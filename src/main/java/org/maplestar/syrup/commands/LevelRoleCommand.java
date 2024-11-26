@@ -89,18 +89,28 @@ public class LevelRoleCommand extends AbstractCommand {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setRemoveOldRoles(status);
-        var success = guildSettingsManager.setSettings(event.getGuild(), settings); // TODO: Do something with the success message
+        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
 
-        event.getHook().editOriginal("Successfully updated level role settings.").queue();
+        if (success) {
+            event.getHook().editOriginal("Successfully updated level role settings.").queue();
+        } else {
+            event.getHook().editOriginal("Oops! Failed to update level role settings. " +
+                    "Please contact the bot developer as this is an internal issue.").queue();
+        }
     }
 
     private void addOnRejoin(SlashCommandInteractionEvent event) {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setAddOnRejoin(status);
-        var success = guildSettingsManager.setSettings(event.getGuild(), settings); // TODO: Do something with the success message
+        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
 
-        event.getHook().editOriginal("Successfully updated level role settings.").queue();
+        if (success) {
+            event.getHook().editOriginal("Successfully updated level role settings.").queue();
+        } else {
+            event.getHook().editOriginal("Oops! Failed to update level role settings. " +
+                    "Please contact the bot developer as this is an internal issue.").queue();
+        }
     }
 
     private void add(SlashCommandInteractionEvent event) {
@@ -110,13 +120,11 @@ public class LevelRoleCommand extends AbstractCommand {
         var roles = levelRoleDataManager.getLevelRoles(event.getGuild());
 
         // if role already exists, cancels function
-        for (var levelRole : roles)
-        {
-            if(levelRole.roleID() != role.getIdLong()) continue;
+        for (var levelRole : roles) {
+            if (levelRole.roleID() != role.getIdLong()) continue;
 
             event.getHook().editOriginal("Level role <@&" + role.getId() + "> already exists " +
-                    "(at **Level " + levelRole.level() + "**)")
-                    .queue();
+                    "(at **Level " + levelRole.level() + "**)").queue();
             return;
         }
 
@@ -132,20 +140,17 @@ public class LevelRoleCommand extends AbstractCommand {
     private void remove(SlashCommandInteractionEvent event) {
         var role = event.getOption("role").getAsRole();
 
-
-        var tryGetLevel = levelRoleDataManager.getLevel(role, event.getGuild());
-        if(!tryGetLevel.isPresent())
-        {
-            event.getHook().editOriginal("Level role <@&" + role.getId() + "> doesn't exist and thus can't be deleted.")
-                    .queue();
+        var levelOptional = levelRoleDataManager.getLevel(role, event.getGuild());
+        if (levelOptional.isEmpty()) {
+            event.getHook().editOriginal("Level role <@&" + role.getId() + "> doesn't exist and thus can't be deleted.").queue();
             return;
         }
-        int level = tryGetLevel.get();
 
+        int level = levelOptional.get();
         levelRoleDataManager.removeLevelRole(event.getGuild(), role.getIdLong());
 
-        event.getHook().editOriginal("Successfully removed <@&" + role.getId() + "> from the list of level roles. It was pointing to level" + "**" + level + "**.")
-                .queue();
+        event.getHook().editOriginal("Successfully removed <@&" + role.getId() + "> from the list of level roles. " +
+                        "It was pointing to level" + "**" + level + "**.").queue();
     }
 
     private void listRoles(SlashCommandInteractionEvent event) {
