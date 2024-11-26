@@ -1,10 +1,14 @@
 package org.maplestar.syrup.listener;
 
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import org.maplestar.syrup.data.levelrole.LevelRoleData;
 import org.maplestar.syrup.data.levelrole.LevelRoleDataManager;
+import org.maplestar.syrup.data.settings.GuildSettings;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 
-import java.util.List;
+import java.util.*;
 
 // oh my god our own event???
 
@@ -31,8 +35,7 @@ public class LevelChangeListener {
      *
      * @param event the event that has been fired, see {@link LevelChangeEvent}
      */
-    public void onLevelChange(LevelChangeEvent event)
-    {
+    public void onLevelChange(LevelChangeEvent event) {
         var guild = event.guild();
         var settings = guildSettingsManager.getSettings(guild);
         var roles = levelRoleDataManager.getLevelRoles(guild);
@@ -53,69 +56,71 @@ public class LevelChangeListener {
                 .filter(levelRole -> minLevel < levelRole.level() && levelRole.level() <= maxLevel)
                 .toList();
 
-        // if level change doesn't actually affect any roles, checks if user doesn't have any roles below minLevel
-        // if removeOldRoles then only the largest such existing role will be added.
-        if (affectedRoles.isEmpty())
-        {
+        // if level change doesn't affect any roles run this
+        // if level decreases, also run this
+        // if the former, this will simply add all of the lower roles or just the max, depending on removeOldRoles
+        // if the latter, this will also remove all affected roles that shouldn't be on the user anymore because the level decreased
+        // if both... no affected roles are actually affected and lower roles are added.
+        if (affectedRoles.isEmpty() || newLevel < oldLevel) {
+            // either affectedRoles is empty and this does nothing or newLevel is less than oldLevel and
+            // we should indeed be removing affectedRoles
+            affectedRoles.stream()
+                    .map(levelRole -> guild.getRoleById(levelRole.roleID()))
+                    .filter(Objects::nonNull)
+                    .forEach(removalRoles::add);
+
+            // Processing lower roles
             var lowerRoles = roles.stream()
                     .filter(levelRole -> levelRole.level() <= minLevel)
                     .toList();
 
-            // guess we didn't have any lower roles either, returns
-            if(lowerRoles.isEmpty()) return;
-
             // add all lower roles because removeOldRoles is false
-            if(!settings.removeOldRoles())
-            {
-                var lowerRolesList = lowerRoles.stream()
-                        .map(levelRole -> guild.getRoleById(levelRole.roleID()))
-                        .toList();
-                guild.modifyMemberRoles(member, lowerRolesList, null).queue();
-                return;
+            if (!lowerRoles.isEmpty()) {
+                newRoles.addAll(getRolesToAdd(guild, settings, lowerRoles));
             }
 
-            // get the max lower role level and add that role to member
-            var maxLevelRole = lowerRoles.getFirst();
-            for(var levelRole : lowerRoles)
-            {
-                if(levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
-            }
-            guild.modifyMemberRoles(member, List.of(guild.getRoleById(maxLevelRole.roleID())), null).queue();
-
+            // newRoles overrides removalRoles in case of conflicts
+            removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
+            newRoles.removeIf(member.getRoles()::contains);
+            guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
             return;
         }
 
-        // removes ALL old roles (if removeOldRoles)
+        // add all affected roles because removeOldRoles is false
+        newRoles.addAll(getRolesToAdd(guild, settings, affectedRoles));
+
+        removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
+        newRoles.removeIf(member.getRoles()::contains);
+        guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
+    }
+
+    /**
+     * Gets max role if removeOldRoles, else gets all roles, of the rolesToProcess argument.
+     * The list should then be added to newRoles, in order to give the necessary roles to the user.
+     * <p>
+     * I'm on television!! -maple
+     *
+     * @param guild the guild
+     * @param settings the guild's settings
+     * @param rolesToProcess quite literally, the roles to process
+     * @return a list of roles given the rules explained above. This list should be added to newRoles
+     */
+    private List<Role> getRolesToAdd(Guild guild, GuildSettings settings, List<LevelRoleData> rolesToProcess) {
         if (settings.removeOldRoles()) {
-            for (var levelRole : roles) {
-                var role = guild.getRoleById(levelRole.roleID());
-                if (role == null) continue;
-                guild.modifyMemberRoles(member, null, List.of(role)).queue();
+            // get the max lower role level and add that role to member
+            var maxLevelRole = rolesToProcess.getFirst();
+            for(var levelRole : rolesToProcess) {
+                if(levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
             }
-        }
 
-        int maxLevelRole = 0;
-
-        // finds the maximum role level amongst all the roles
-        for (var levelRole : affectedRoles) {
-            if (levelRole.level() > maxLevelRole) maxLevelRole = levelRole.level();
-        }
-
-        // either adds new role(s) or removes them depending on if level increased or decreased
-        for (var levelRole : affectedRoles) {
-            var role = guild.getRoleById(levelRole.roleID());
-            if (role == null) continue;
-
-            // adds roles
-            if (oldLevel < newLevel) {
-                // if removeOldRoles and not the max role level then don't add the roles
-                if (settings.removeOldRoles() && levelRole.level() != maxLevelRole) continue;
-                guild.modifyMemberRoles(member, List.of(role), null).queue();
-            } else {
-                // if removeOldRoles then roles were already removed earlier
-                if (settings.removeOldRoles()) continue;
-                guild.modifyMemberRoles(member, null, List.of(role)).queue();
-            }
+            var theRole = guild.getRoleById(maxLevelRole.roleID());
+            if (theRole == null) return List.of();
+            return List.of(theRole);
+        } else {
+            return rolesToProcess.stream()
+                    .map(levelRole -> guild.getRoleById(levelRole.roleID()))
+                    .filter(Objects::nonNull)
+                    .toList();
         }
     }
 }
