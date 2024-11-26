@@ -123,8 +123,8 @@ public class LevelRoleCommand extends AbstractCommand {
         levelRoleDataManager.addLevelRole(event.getGuild(), role, level);
 
         event.getHook().editOriginal(
-                "Successfully assigned <@&" + role.getId() + "> to level **" + level + "**. Make sure I have" +
-                "permission to add this role to members. Members who are missing this role will receive it the next" +
+                "Successfully assigned <@&" + role.getId() + "> to level **" + level + "**. Make sure I have " +
+                "permission to add this role to members. Members who are missing this role will receive it the next " +
                 "time they level up (if applicable).")
                 .queue();
     }
