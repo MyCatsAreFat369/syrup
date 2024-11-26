@@ -1,6 +1,7 @@
 package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -139,6 +140,11 @@ public class RankCommand extends AbstractCommand {
 
     private void edit(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
+
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            event.getHook().editOriginal("nope").queue();
+            return;
+        }
 
         var user = event.getOption("user").getAsUser();
         var type = RankCommandType.valueOf(event.getOption("type").getAsString());

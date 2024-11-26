@@ -19,7 +19,7 @@ public abstract class AbstractCommand {
     }
 
     /**
-     * the name of the command, as displayed on Discord.
+     * The name of the command, as displayed on Discord.
      * Should be the same when configuring the command in {@link AbstractCommand#getSlashCommandData()}.
      *
      * @return the name of this command

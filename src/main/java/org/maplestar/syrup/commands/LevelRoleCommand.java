@@ -1,8 +1,10 @@
 package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -31,6 +33,7 @@ public class LevelRoleCommand extends AbstractCommand {
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "Manage level roles")
                 .setGuildOnly(true)
+                .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                 .addSubcommandGroups(new SubcommandGroupData("settings", "Access the settings for level roles")
                         .addSubcommands(
                                 new SubcommandData("list", "View the settings for level roles"),

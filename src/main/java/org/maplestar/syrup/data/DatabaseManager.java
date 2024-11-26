@@ -56,7 +56,6 @@ public class DatabaseManager {
             statement.execute("CREATE TABLE IF NOT EXISTS BlockedChannels (guild_id BIGINT, channel_id BIGINT, PRIMARY KEY (guild_id, channel_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS GuildSettings (guild_id BIGINT PRIMARY KEY, remove_old_roles BOOLEAN, add_on_join BOOLEAN)");
             statement.execute("CREATE TABLE IF NOT EXISTS LevelRoles (guild_id BIGINT, role_id BIGINT, level INTEGER, PRIMARY KEY (guild_id, role_id))");
-            statement.execute("CREATE TABLE IF NOT EXISTS ModeratorRoles (guild_id BIGINT, role_id BIGINT, PRIMARY KEY (guild_id, role_id))");
         } catch (SQLException exception) {
             logger.error("Could not create tables", exception);
             System.exit(1);
