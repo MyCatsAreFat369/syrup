@@ -8,7 +8,10 @@ import org.maplestar.syrup.data.settings.GuildSettings;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 // oh my god our own event???
 
