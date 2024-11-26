@@ -54,7 +54,8 @@ public class LevelRoleCommand extends AbstractCommand {
     public void execute(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
 
-        if (event.getSubcommandGroup().equals("settings")) {
+        var subCommandGroup = event.getSubcommandGroup();
+        if (subCommandGroup != null && subCommandGroup.equals("settings")) {
             switch (event.getSubcommandName()) {
                 case "list" -> listSettings(event);
                 case "add_on_rejoin" -> addOnRejoin(event);
