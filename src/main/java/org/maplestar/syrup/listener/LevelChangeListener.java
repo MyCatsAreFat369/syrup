@@ -56,6 +56,18 @@ public class LevelChangeListener {
                 .filter(levelRole -> minLevel < levelRole.level() && levelRole.level() <= maxLevel)
                 .toList();
 
+        Set<Role> newRoles = new HashSet<>();
+        Set<Role> removalRoles = new HashSet<>();
+
+        // removes ALL old roles (if removeOldRoles)
+        if (settings.removeOldRoles()) {
+            roles.stream()
+                    .map(levelRole -> guild.getRoleById(levelRole.roleID()))
+                    .filter(Objects::nonNull)
+                    .filter(member.getRoles()::contains)
+                    .forEach(removalRoles::add);
+        }
+
         // if level change doesn't affect any roles run this
         // if level decreases, also run this
         // if the former, this will simply add all of the lower roles or just the max, depending on removeOldRoles
