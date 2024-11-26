@@ -56,6 +56,8 @@ public class CommandManager extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (!event.isFromGuild()) return;
 
+        logger.info("Received command {} from {}", event.getCommandString(), event.getUser().getName());
+
         commands.stream()
                 .filter(command -> command.name().equals(event.getName()))
                 .forEach(command -> command.execute(event));
