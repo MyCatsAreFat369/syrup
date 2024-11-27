@@ -120,17 +120,18 @@ public class LevelDataManager {
      * @param guild the guild
      * @param levelData the new {@link LevelData}
      */
-    public void setLevelData(User user, Guild guild, LevelData levelData) {
+    public boolean setLevelData(User user, Guild guild, LevelData levelData) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp")) {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, user.getIdLong());
                 statement.setInt(3, levelData.level());
                 statement.setLong(4, levelData.xp());
-                statement.executeUpdate();
+                return statement.executeUpdate() == 1;
             }
         } catch (SQLException exception) {
             logger.error("Couldn't update level data for user {} on guild {}", user.getName(), guild.getId(), exception);
+            return false;
         }
     }
 }

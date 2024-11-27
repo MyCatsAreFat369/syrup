@@ -91,8 +91,8 @@ public class RankCommand extends AbstractCommand {
                     .setColor(EmbedColors.primary());
 
             String desc = String.format(
-                    "<@%d>, you currently have **%,d** XP (Level **%d**) and are in position **%,d**",
-                    event.getUser().getIdLong(),
+                    "%s, you currently have **%,d** XP (Level **%d**) and are in position **%,d**",
+                    event.getUser().getAsMention(),
                     userRank.levelData().xp(),
                     userRank.levelData().level(),
                     userRank.rank()
@@ -159,11 +159,15 @@ public class RankCommand extends AbstractCommand {
             newLevelData = oldLevelData.setLevel(value);
         }
 
+        var success = levelDataManager.setLevelData(user, event.getGuild(), newLevelData);
+        if (!success) {
+            event.getHook().editOriginal("Oops! Failed to edit the user's rank. Please contact the bot developer as this is an internal issue.").queue();
+            return;
+        }
+
         if (newLevelData.level() != oldLevelData.level()) {
             levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, newLevelData, oldLevelData));
         }
-
-        levelDataManager.setLevelData(user, event.getGuild(), newLevelData);
 
         event.getHook().editOriginal("Set user <@" + user.getId() + ">'s " + type.toString().toLowerCase() + " to " + value).queue();
     }

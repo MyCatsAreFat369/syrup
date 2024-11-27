@@ -56,33 +56,13 @@ public class LevelRoleDataManager {
     }
 
     /**
-     * Checks whether the provided role on the guild is a registered level role.
-     *
-     * @param role the role representing the level role
-     * @param guild the guild
-     * @return false if the role is not a level role or on database failure, otherwise true
-     */
-    public boolean isLevelRole(Role role, Guild guild) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
-                statement.setLong(1, guild.getIdLong());
-                statement.setLong(2, role.getIdLong());
-                return statement.executeQuery().next();
-            }
-        } catch (SQLException exception) {
-            logger.error("Failed to check level role {} for guild {}", role.getId(), guild.getName(), exception);
-            return false;
-        }
-    }
-
-    /**
-     * Retrieves the level at which the provided level role on the guild should be obtained.
+     * Retrieves the level role configuration for the Discord role on the provided guild.
      *
      * @param role the Discord role representing the level role
      * @param guild the guild
-     * @return an empty {@link Optional} if the role is not a level role or on database failure, otherwise containing the level
+     * @return an empty {@link Optional} if the role is not a level role or on database failure, otherwise containing the LevelRoleData
      */
-    public Optional<Integer> getLevel(Role role, Guild guild) {
+    public Optional<LevelRoleData> getLevelRoleData(Role role, Guild guild) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT level FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
                 statement.setLong(1, guild.getIdLong());
@@ -90,7 +70,7 @@ public class LevelRoleDataManager {
 
                 var resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    return Optional.of(resultSet.getInt("level"));
+                    return Optional.of(new LevelRoleData(role.getIdLong(), resultSet.getInt("level")));
                 } else {
                     return Optional.empty();
                 }

@@ -80,14 +80,12 @@ public class XPBlockCommand extends AbstractCommand {
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, true);
         if (!success) {
             event.getHook().editOriginal("Oops! Failed to toggle xp-block in this channel. " +
-                            "Please contact the bot developer as this is an internal issue.")
-                    .queue();
+                    "Please contact the bot developer as this is an internal issue.").queue();
             return;
         }
 
         event.getHook().editOriginal("This channel had been **added** to the xp-blocklist! " +
-                        "Users will no longer gain xp by chatting here.")
-                .queue();
+                "Users will no longer gain xp by chatting here.").queue();
     }
 
     private void unblock(SlashCommandInteractionEvent event) {
@@ -106,7 +104,8 @@ public class XPBlockCommand extends AbstractCommand {
             return;
         }
 
-        event.getHook().editOriginal("This channel has been **removed** from the xp-blocklist! Users will now gain xp by chatting here.").queue();
+        event.getHook().editOriginal("This channel has been **removed** from the xp-blocklist! " +
+                "Users will now gain xp by chatting here.").queue();
     }
 
     private void cleanup(SlashCommandInteractionEvent event) {
