@@ -40,10 +40,10 @@ public class ExpGainListener extends ListenerAdapter {
         var oldLevelData = levelDataManager.getLevelData(user, guild);
         var newLevelData = oldLevelData.addXP(addXP);
 
+        levelDataManager.setLevelData(event.getAuthor(), event.getGuild(), newLevelData);
+
         if (newLevelData.level() != oldLevelData.level()) {
             levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, newLevelData, oldLevelData));
         }
-
-        levelDataManager.setLevelData(event.getAuthor(), event.getGuild(), oldLevelData);
     }
 }
