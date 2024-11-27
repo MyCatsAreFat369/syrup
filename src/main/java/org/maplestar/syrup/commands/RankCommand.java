@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.utils.AttachedFile;
 import org.maplestar.syrup.commands.internal.AbstractCommand;
 import org.maplestar.syrup.data.rank.LevelData;
 import org.maplestar.syrup.data.rank.LevelDataManager;
@@ -16,12 +17,16 @@ import org.maplestar.syrup.data.rank.RankingData;
 import org.maplestar.syrup.listener.LevelChangeListener;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 import org.maplestar.syrup.utils.EmbedColors;
+import org.maplestar.syrup.utils.ImageUtils;
 import org.maplestar.syrup.utils.UserUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class RankCommand extends AbstractCommand {
+    private final Logger logger = LoggerFactory.getLogger(RankCommand.class);
     private final LevelDataManager levelDataManager;
     private final ExecutorService executorService;
     private final LevelChangeListener levelChangeListener;
@@ -67,14 +72,16 @@ public class RankCommand extends AbstractCommand {
     private void user(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
-        var user = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
-        var levelData = levelDataManager.getLevelData(user, event.getGuild());
+        var member = event.getOption("user", event.getMember(), OptionMapping::getAsMember);
+        var rankingData = levelDataManager.getRankingData(member.getUser(), event.getGuild());
 
-        event.getHook().editOriginal(
-                "<@" + user.getId() + ">'s Level Stats:\n" +
-                "Level " + levelData.level() + "\n" +
-                levelData.xp() + " XP")
-                .queue();
+        try {
+            var imageBytes = ImageUtils.generateImage(member, rankingData);
+            event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
+        } catch (Exception exception) {
+            logger.error("Couldn't attach rank file", exception);
+            event.getHook().editOriginal("Something went wrong, this is work in progress").queue(); // TODO: Update message
+        }
     }
 
     private void leaderboard(SlashCommandInteractionEvent event) {
@@ -174,7 +181,7 @@ public class RankCommand extends AbstractCommand {
             levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, newLevelData, oldLevelData));
         }
 
-        event.getHook().editOriginal("Set user <@" + user.getId() + ">'s " + type.toString().toLowerCase() + " to " + value).queue();
+        event.getHook().editOriginal("Set user " + user.getAsMention() + "'s " + type.toString().toLowerCase() + " to " + value).queue();
     }
 
     private enum RankCommandType {
