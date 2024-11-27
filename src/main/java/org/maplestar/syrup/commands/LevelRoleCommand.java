@@ -16,6 +16,7 @@ import org.maplestar.syrup.data.levelrole.LevelRoleDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.utils.EmbedColors;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class LevelRoleCommand extends AbstractCommand {
@@ -79,7 +80,7 @@ public class LevelRoleCommand extends AbstractCommand {
     private void listSettings(SlashCommandInteractionEvent event) {
         var settings = guildSettingsManager.getSettings(event.getGuild());
         var embedBuilder = new EmbedBuilder()
-                .setTitle("**Level role settings")
+                .setTitle("**Level role settings**")
                 .setAuthor(event.getGuild().getName(), null, event.getGuild().getIconUrl())
                 .setColor(EmbedColors.primary())
                 .addField("**__Remove old roles__**", settings.removeOldRoles() ? "Yes" : "No", true)
@@ -92,8 +93,8 @@ public class LevelRoleCommand extends AbstractCommand {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setRemoveOldRoles(status);
-        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
 
+        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
         if (success) {
             event.getHook().editOriginal("Successfully updated level role settings.").queue();
         } else {
@@ -106,8 +107,8 @@ public class LevelRoleCommand extends AbstractCommand {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setAddOnRejoin(status);
-        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
 
+        var success = guildSettingsManager.setSettings(event.getGuild(), settings);
         if (success) {
             event.getHook().editOriginal("Successfully updated level role settings.").queue();
         } else {
@@ -120,56 +121,58 @@ public class LevelRoleCommand extends AbstractCommand {
         var role = event.getOption("role").getAsRole();
         int level = event.getOption("level").getAsInt();
 
-        var roles = levelRoleDataManager.getLevelRoles(event.getGuild());
-
         // if role already exists, cancels function
-        for (var levelRole : roles) {
-            if (levelRole.roleID() != role.getIdLong()) continue;
-
-            event.getHook().editOriginal("Level role <@&" + role.getId() + "> already exists " +
-                    "(at **Level " + levelRole.level() + "**)").queue();
+        var levelRoleOptional = levelRoleDataManager.getLevelRoleData(role, event.getGuild());
+        if (levelRoleOptional.isPresent()) {
+            event.getHook().editOriginal("Level role " + role.getAsMention() + " already exists " +
+                    "(at **Level " + levelRoleOptional.get().level() + "**)").queue();
             return;
         }
 
-        levelRoleDataManager.addLevelRole(event.getGuild(), role, level);
-
-        event.getHook().editOriginal(
-                "Successfully assigned <@&" + role.getId() + "> to level **" + level + "**. Make sure I have " +
-                "permission to add this role to members. Members who are missing this role will receive it the next " +
-                "time they level up (if applicable).")
-                .queue();
+        var success = levelRoleDataManager.addLevelRole(event.getGuild(), role, level);
+        if (success) {
+            event.getHook().editOriginal(
+                            "Successfully assigned " + role.getAsMention() + " to level **" + level + "**. Make sure I have " +
+                                    "permission to add this role to members. Members who are missing this role will receive it the next " +
+                                    "time they level up (if applicable).").queue();
+        } else {
+            event.getHook().editOriginal("Oops! Failed to create reaction role. Please contact the bot developer as this is an internal issue.").queue();
+        }
     }
 
     private void remove(SlashCommandInteractionEvent event) {
         var role = event.getOption("role").getAsRole();
 
-        var levelOptional = levelRoleDataManager.getLevel(role, event.getGuild());
-        if (levelOptional.isEmpty()) {
-            event.getHook().editOriginal("Level role <@&" + role.getId() + "> doesn't exist and thus can't be deleted.").queue();
+        var levelRoleOptional = levelRoleDataManager.getLevelRoleData(role, event.getGuild());
+        if (levelRoleOptional.isEmpty()) {
+            event.getHook().editOriginal("Level role " + role.getAsMention() + " doesn't exist and thus can't be deleted.").queue();
             return;
         }
 
-        int level = levelOptional.get();
-        levelRoleDataManager.removeLevelRole(event.getGuild(), role.getIdLong());
-
-        event.getHook().editOriginal("Successfully removed <@&" + role.getId() + "> from the list of level roles. " +
-                        "It was pointing to level" + "**" + level + "**.").queue();
+        var success = levelRoleDataManager.removeLevelRole(event.getGuild(), role.getIdLong());
+        if (success) {
+            event.getHook().editOriginal("Successfully removed " + role.getAsMention() + " from the list of level roles. " +
+                    "It was pointing to level" + "**" + levelRoleOptional.get().level() + "**.").queue();
+        } else {
+            event.getHook().editOriginal("Oops! Failed to delete reaction role. Please contact the bot developer as this is an internal issue.").queue();
+        }
     }
 
     private void listRoles(SlashCommandInteractionEvent event) {
-        List<LevelRoleData> levelRoles = levelRoleDataManager.getLevelRoles(event.getGuild());
+        List<LevelRoleData> levelRoles = levelRoleDataManager.getLevelRoles(event.getGuild()).stream()
+                .sorted(Comparator.comparingLong(LevelRoleData::level))
+                .toList();
 
         var embedBuilder = new EmbedBuilder()
-                .setTitle("**Level role settings")
+                .setTitle("**Level roles**")
                 .setAuthor(event.getGuild().getName(), null, event.getGuild().getIconUrl())
                 .setColor(EmbedColors.primary());
-
+        
         for (var levelRole : levelRoles) {
             embedBuilder.addField("**__Level " + levelRole.level() + "__**", "<@&" + levelRole.roleID() + ">", true);
         }
 
-        var embed = embedBuilder.build();
-        event.getHook().editOriginalEmbeds(embed).queue();
+        event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
     private void cleanup(SlashCommandInteractionEvent event) {
