@@ -150,6 +150,11 @@ public class RankCommand extends AbstractCommand {
         var type = RankCommandType.valueOf(event.getOption("type").getAsString());
         var value = event.getOption("value").getAsInt();
 
+        if (user.isBot()) {
+            event.getHook().editOriginal("Oops! Bot accounts can't have a rank.").queue();
+            return;
+        }
+
         var oldLevelData = levelDataManager.getLevelData(user, event.getGuild());
         LevelData newLevelData = null;
 
