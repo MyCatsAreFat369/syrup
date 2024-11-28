@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.entities.User;
  */
 public record RankingData(long userID, int rank, LevelData levelData) {
     /**
-     * An empty data record to be used in case of database failure.
+     * An empty data record to be used in case of database failure or if a user hasn't sent any messages.
      *
      * @param user the user
      * @return a new instance representing invalid data (rank -1 and no {@link LevelData})

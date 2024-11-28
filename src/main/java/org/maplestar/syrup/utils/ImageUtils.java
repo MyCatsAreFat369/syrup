@@ -90,7 +90,7 @@ public class ImageUtils {
         int normalTextSize = 50;
         g2d.setFont(new Font("NotoSans", Font.PLAIN, normalTextSize));
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Rank #" + rankingData.rank(), textX, textY + nameSize);
+        g2d.drawString("Rank " + (rankingData.rank() == -1 ? "Invalid" : "#" + rankingData.rank()), textX, textY + nameSize);
         g2d.drawString("Level " + rankingData.levelData().level(), textX, textY + nameSize + normalTextSize);
         g2d.drawString(String.format("%,d XP", rankingData.levelData().xp()), textX, textY + nameSize + normalTextSize * 2);
 
