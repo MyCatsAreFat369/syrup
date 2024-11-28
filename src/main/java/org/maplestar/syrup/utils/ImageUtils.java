@@ -102,15 +102,15 @@ public class ImageUtils {
         int normalTextSize = 50;
         g2d.setFont(new Font("NotoSans", Font.PLAIN, normalTextSize));
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Rank " + (rankingData.rank() == -1 ? "Invalid" : "#" + rankingData.rank()), textX, textY + nameSize);
+        g2d.drawString("Rank " + (rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank()), textX, textY + nameSize);
         g2d.drawString("Level " + rankingData.levelData().level(), textX, textY + nameSize + normalTextSize);
         g2d.drawString(String.format("%,d XP", rankingData.levelData().xp()), textX, textY + nameSize + normalTextSize * 2);
 
         // Draw XP remaining
         int smallerTextSize = 30;
-        long requiredXP = rankingData.levelData().requiredForLevelup(rankingData.levelData().level()) - rankingData.levelData().xp();
+        long remainingXP = rankingData.levelData().remainingXPForLevelup();
         g2d.setFont(new Font("NotoSans", Font.ITALIC, smallerTextSize));
-        g2d.drawString(String.format("%,d XP until next level", requiredXP), textX, textY + nameSize + normalTextSize * 3);
+        g2d.drawString(String.format("%,d XP until next level", remainingXP), textX, textY + nameSize + normalTextSize * 3);
 
         // Free graphics object to save resources
         g2d.dispose();
