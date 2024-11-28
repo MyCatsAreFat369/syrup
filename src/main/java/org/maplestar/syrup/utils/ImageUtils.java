@@ -53,7 +53,7 @@ public class ImageUtils {
         float[] blurKernel = new float[blurSize * blurSize];
         Arrays.fill(blurKernel, blurScale);
         Kernel kernel = new Kernel(blurSize, blurSize, blurKernel);
-        ConvolveOp convolveOp = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+        ConvolveOp convolveOp = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
 
         int pad = blurSize / 2;
         BufferedImage bannerPadded = new BufferedImage(bannerImage.getWidth() + pad * 2, bannerImage.getHeight() + pad * 2, BufferedImage.TYPE_INT_ARGB);
