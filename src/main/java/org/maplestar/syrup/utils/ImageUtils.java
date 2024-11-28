@@ -19,8 +19,20 @@ import java.util.Arrays;
 public class ImageUtils {
     public static byte[] generateImage(Member member, RankingData rankingData) throws IOException {
         // Load the avatar & banner from Discord
-        BufferedImage avatarImage = loadImageFromUrl(member.getEffectiveAvatarUrl() + "?size=256");
-        BufferedImage bannerImage = loadImageFromUrl(member.getUser().retrieveProfile().complete().getBannerUrl() + "?size=1024");
+        var profile = member.getUser().retrieveProfile().complete();
+        var avatarUrl = member.getEffectiveAvatarUrl();
+        var bannerUrl = profile.getBannerUrl();
+        BufferedImage avatarImage = loadImageFromUrl(avatarUrl + "?size=256");
+        BufferedImage bannerImage;
+        if (bannerUrl != null) {
+            bannerImage = loadImageFromUrl(bannerUrl + "?size=1024");
+        } else {
+            bannerImage = new BufferedImage(1024, 360, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage bannerImageTemp = loadImageFromUrl(avatarUrl + "?size=256");
+            var g2dBanner = bannerImage.createGraphics();
+            g2dBanner.drawImage(bannerImageTemp, 0, -332, 1024, 1024, null);
+            g2dBanner.dispose();
+        }
 
         // LOGIC:
         // if Server Banner: loadServerBanner
