@@ -10,6 +10,7 @@ import org.maplestar.syrup.config.Config;
 import org.maplestar.syrup.data.DatabaseManager;
 import org.maplestar.syrup.data.block.BlockDataManager;
 import org.maplestar.syrup.data.levelrole.LevelRoleDataManager;
+import org.maplestar.syrup.data.migration.TakaMigrator;
 import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.ExpGainListener;
@@ -52,6 +53,8 @@ public class Main {
                 .queue();
 
         Runtime.getRuntime().addShutdownHook(new Thread(databaseManager::closeDataSource));
+
+        TakaMigrator.migrateTakaFiles(databaseManager);
 
         logger.info("hi!!");
     }

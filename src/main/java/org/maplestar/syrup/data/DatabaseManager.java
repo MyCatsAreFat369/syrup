@@ -37,7 +37,7 @@ public class DatabaseManager {
         dataSource.setPassword(config.databasePassword());
         dataSource.addDataSourceProperty("serverName", config.databaseHost());
         dataSource.addDataSourceProperty("databaseName", config.databaseName());
-        dataSource.setMinimumIdle(2);
+        dataSource.setMinimumIdle(3);
         dataSource.setAutoCommit(true);
         try {
             dataSource.getConnection();
