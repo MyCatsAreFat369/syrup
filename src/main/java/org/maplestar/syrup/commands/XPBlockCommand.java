@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.maplestar.syrup.commands.internal.AbstractCommand;
 import org.maplestar.syrup.data.block.BlockDataManager;
+import org.maplestar.syrup.utils.EmbedMessage;
 
 public class XPBlockCommand extends AbstractCommand {
     private final BlockDataManager blockDataManager;
@@ -72,20 +73,23 @@ public class XPBlockCommand extends AbstractCommand {
 
         boolean isBlocked = blockDataManager.isBlocked(channel, guild);
         if (isBlocked) {
-            event.getHook().editOriginal("This channel is already in the blocklist!")
-                    .queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is already in the blocklist!")).queue();
             return;
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, true);
         if (!success) {
-            event.getHook().editOriginal("Oops! Failed to toggle xp-block in this channel. " +
-                    "Please contact the bot developer as this is an internal issue.").queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
+                    Oops! Failed to toggle xp-block in this channel.
+                    
+                    Please contact the bot developer as this is an internal issue.""")).queue();
             return;
         }
 
-        event.getHook().editOriginal("This channel had been **added** to the xp-blocklist! " +
-                "Users will no longer gain xp by chatting here.").queue();
+        event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
+                This channel had been **added** to the xp-blocklist!
+                
+                Users will no longer gain xp by chatting here.""")).queue();
     }
 
     private void unblock(SlashCommandInteractionEvent event) {
@@ -94,18 +98,23 @@ public class XPBlockCommand extends AbstractCommand {
 
         boolean isBlocked = blockDataManager.isBlocked(channel, guild);
         if (!isBlocked) {
-            event.getHook().editOriginal("This channel is not in the blocklist!").queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is not in the blocklist!")).queue();
             return;
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, false);
         if (!success) {
-            event.getHook().editOriginal("Oops! Failed to toggle xp-block in this channel. Please contact the bot developer as this is an internal issue.").queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
+                    Oops! Failed to toggle xp-block in this channel.
+                    
+                    Please contact the bot developer as this is an internal issue.""")).queue();
             return;
         }
 
-        event.getHook().editOriginal("This channel has been **removed** from the xp-blocklist! " +
-                "Users will now gain xp by chatting here.").queue();
+        event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
+                This channel has been **removed** from the xp-blocklist!\s
+                
+                Users will now gain xp by chatting here.""")).queue();
     }
 
     private void cleanup(SlashCommandInteractionEvent event) {
@@ -118,6 +127,6 @@ public class XPBlockCommand extends AbstractCommand {
                 .filter(blockedChannelID -> !guildChannels.contains(blockedChannelID))
                 .forEach(invalidChannelID -> blockDataManager.setBlocked(invalidChannelID, guild, false));
 
-        event.getHook().editOriginal("Channels have been cleaned!!").queue();
+        event.getHook().editOriginalEmbeds(EmbedMessage.normal("Channels have been cleaned!!")).queue();
     }
 }

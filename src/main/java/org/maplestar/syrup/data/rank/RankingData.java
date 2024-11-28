@@ -19,4 +19,13 @@ public record RankingData(long userID, int rank, LevelData levelData) {
     public static RankingData zero(User user) {
         return new RankingData(user.getIdLong(), -1, LevelData.ZERO);
     }
+
+    /**
+     * Indicates whether this object describes a valid rank.
+     *
+     * @return true if the data is valid, false if the user hasn't sent a message or on database connection failure
+     */
+    public boolean isInvalid() {
+        return rank == -1;
+    }
 }

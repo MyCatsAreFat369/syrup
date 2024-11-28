@@ -17,6 +17,7 @@ import org.maplestar.syrup.data.rank.RankingData;
 import org.maplestar.syrup.listener.LevelChangeListener;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 import org.maplestar.syrup.utils.EmbedColors;
+import org.maplestar.syrup.utils.EmbedMessage;
 import org.maplestar.syrup.utils.ImageUtils;
 import org.maplestar.syrup.utils.UserUtils;
 import org.slf4j.Logger;
@@ -80,7 +81,18 @@ public class RankCommand extends AbstractCommand {
             event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
         } catch (Exception exception) {
             logger.error("Couldn't attach rank file", exception);
-            event.getHook().editOriginal("Something went wrong, this is work in progress").queue(); // TODO: Update message
+            event.getHook().editOriginalEmbeds(EmbedMessage.error(
+                    """
+                    *Something went wrong while generating your rank image, but here you go:*
+                    
+                    **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP are required to level up.""".formatted(
+                            member.getEffectiveName(),
+                            rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank(),
+                            rankingData.levelData().level(),
+                            rankingData.levelData().xp(),
+                            rankingData.levelData().remainingXPForLevelup()
+                    )
+            )).queue();
         }
     }
 
@@ -158,7 +170,7 @@ public class RankCommand extends AbstractCommand {
         var value = event.getOption("value").getAsInt();
 
         if (user.isBot()) {
-            event.getHook().editOriginal("Oops! Bot accounts can't have a rank.").queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("Oops! Bot accounts can't have a rank.")).queue();
             return;
         }
 
@@ -173,7 +185,10 @@ public class RankCommand extends AbstractCommand {
 
         var success = levelDataManager.setLevelData(user, event.getGuild(), newLevelData);
         if (!success) {
-            event.getHook().editOriginal("Oops! Failed to edit the user's rank. Please contact the bot developer as this is an internal issue.").queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
+                    Oops! Failed to edit the user's rank.
+                    
+                    Please contact the bot developer as this is an internal issue.""")).queue();
             return;
         }
 
@@ -181,7 +196,14 @@ public class RankCommand extends AbstractCommand {
             levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, newLevelData, oldLevelData));
         }
 
-        event.getHook().editOriginal("Set user " + user.getAsMention() + "'s " + type.toString().toLowerCase() + " to " + value).queue();
+        event.getHook().editOriginalEmbeds(EmbedMessage.normal(
+                String.format(
+                    "Set user %s's %s to %d",
+                    user.getAsMention(),
+                    type.toString().toLowerCase(),
+                    value
+                )
+        )).queue();
     }
 
     private enum RankCommandType {

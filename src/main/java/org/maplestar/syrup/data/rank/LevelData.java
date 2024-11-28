@@ -17,7 +17,7 @@ public record LevelData(int level, long xp) {
      */
     public LevelData addXP(int xp) {
         var newXp = this.xp + xp;
-        var requiredXP = requiredForLevelup(this.level);
+        var requiredXP = requiredTotalForLevelup(this.level);
         var newLevel = newXp >= requiredXP ? this.level + 1 : this.level;
         return new LevelData(newLevel, newXp);
     }
@@ -43,20 +43,31 @@ public record LevelData(int level, long xp) {
      */
     public LevelData setLevel(int level) {
         if(level < 0) return this;
-        return new LevelData(level, requiredForLevelup(level - 1));
+        return new LevelData(level, requiredTotalForLevelup(level - 1));
     }
 
     /**
-     * Calculates how much XP is required for achieve the next level.
+     * Calculates how much total XP is required to reach the next level.
      * <p>
      * Uses the formula (72 * level^2) + (50 * level) + 100
      *
      * @param level the current level
      * @return the amount of XP required
      */
-    public long requiredForLevelup(int level) {
+    public long requiredTotalForLevelup(int level) {
         if(level < 0) return 0;
         return (long) (72L * Math.pow(level, 2) + 50L * level + 100L);
+    }
+
+    /**
+     * Calculates how much more XP is required to reach the next level from the current one given the current XP amount.
+     * <p>
+     * Uses the formula total_xp_required_for_levelup - current_xp
+     *
+     * @return the amount of XP required
+     */
+    public long remainingXPForLevelup() {
+        return requiredTotalForLevelup(level) - xp;
     }
 
     /**
