@@ -15,7 +15,7 @@ public record LevelData(int level, long xp) {
      * @param xp the XP amount
      * @return a new {@link LevelData} representing the new XP amount
      */
-    public LevelData addXP(int xp) {
+    public LevelData addXP(long xp) {
         var newXp = this.xp + xp;
         var requiredXP = requiredTotalForLevelup(this.level);
         var newLevel = newXp >= requiredXP ? this.level + 1 : this.level;
@@ -28,10 +28,10 @@ public record LevelData(int level, long xp) {
      * @param xp the new XP amount
      * @return a new {@link LevelData} representing the new XP amount
      */
-    public LevelData setXP(int xp) {
-        if(xp < 100) return new LevelData(0, xp);
+    public LevelData setXP(long xp) {
+        if (xp < 100) return new LevelData(0, xp);
 
-        int newLevel = xpToLevel();
+        int newLevel = xpToLevel(xp);
         return new LevelData(newLevel, xp);
     }
 
@@ -77,7 +77,7 @@ public record LevelData(int level, long xp) {
      *
      * @return the level
      */
-    public int xpToLevel() {
+    public int xpToLevel(long xp) {
         return (int) Math.floor((-50 + Math.sqrt(2500 - 4 * 72 * (100 - xp))) / (2 * 72)) + 1;
     }
 }
