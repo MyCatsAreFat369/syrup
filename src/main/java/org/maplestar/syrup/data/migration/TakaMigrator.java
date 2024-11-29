@@ -16,7 +16,7 @@ public class TakaMigrator {
     public static void migrateTakaFiles(DatabaseManager databaseManager) {
         logger.info("Starting Taka migration...");
 
-        try (var files = Files.walk(Path.of("Migration"))) {
+        try (var files = Files.walk(Path.of("migration"))) {
             files.filter(path -> path.toFile().getName().endsWith(".csv"))
                     .forEach(path -> migrateFile(path, databaseManager));
         } catch (IOException exception) {
