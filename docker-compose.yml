@@ -9,7 +9,7 @@ services:
     volumes:
       - "./.env:/app/.env"
       - "./logs/:/app/logs/"
-      - "./migration/:/app/Migration/"
+      - "./migration/:/app/migration/"
 
   db:
     image: postgres:17.2
