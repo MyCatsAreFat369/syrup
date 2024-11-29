@@ -15,6 +15,7 @@ import org.maplestar.syrup.data.migration.TakaMigrator;
 import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.ExpGainListener;
+import org.maplestar.syrup.listener.GuildMemberJoinListener;
 import org.maplestar.syrup.listener.LevelChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,8 @@ public class Main {
                 .setActivity(Activity.playing("NewWorld Online"))
                 .addEventListeners(
                         commandManager,
-                        new ExpGainListener(levelDataManager, blockDataManager, levelChangeListener)
+                        new ExpGainListener(levelDataManager, blockDataManager, levelChangeListener),
+                        new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener)
                 )
                 .build();
 
