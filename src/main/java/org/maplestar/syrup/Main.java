@@ -33,6 +33,8 @@ public class Main {
         var config = Config.load();
 
         var databaseManager = new DatabaseManager(config);
+        TakaMigrator.migrateTakaFiles(databaseManager);
+
         var levelDataManager = new LevelDataManager(databaseManager);
         var blockDataManager = new BlockDataManager(databaseManager);
         var levelRoleDataManager = new LevelRoleDataManager(databaseManager);
@@ -53,8 +55,6 @@ public class Main {
                 .queue();
 
         Runtime.getRuntime().addShutdownHook(new Thread(databaseManager::closeDataSource));
-
-        TakaMigrator.migrateTakaFiles(databaseManager);
 
         logger.info("hi!!");
     }
