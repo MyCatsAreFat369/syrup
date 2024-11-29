@@ -101,6 +101,10 @@ public class RankCommand extends AbstractCommand {
 
         executorService.submit(() -> {
             int page = event.getOption("page", 1, OptionMapping::getAsInt);
+
+            // Cap the page at 100k to prevent infinite loading bugs
+            if (page > 100_000) page = 100_000;
+
             var guild = event.getGuild();
             var rankedUsers = levelDataManager.getTopUsers(guild, page);
             var userRank = levelDataManager.getRankingData(event.getUser(), guild);
