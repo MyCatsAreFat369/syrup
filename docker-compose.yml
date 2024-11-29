@@ -1,0 +1,27 @@
+services:
+  bot:
+    image: maplestar3/syrup
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - syrup_network
+    volumes:
+      - "./.env:/app/.env"
+      - "./logs/:/app/logs/"
+      - "./migration/:/app/Migration/"
+
+  db:
+    image: postgres:17.2
+    restart: unless-stopped
+    networks:
+      - syrup_network
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_PASSWORD: 123 # WARNING: Update this!
+      POSTGRES_USER: syrup
+
+networks:
+  syrup_network:
+    internal: true
