@@ -20,10 +20,19 @@ import org.maplestar.syrup.utils.EmbedMessage;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The /levelrole command for managing levelroles.
+ */
 public class LevelRoleCommand extends AbstractCommand {
     private final LevelRoleDataManager levelRoleDataManager;
     private final GuildSettingsManager guildSettingsManager;
 
+    /**
+     * Initializes the command.
+     *
+     * @param levelRoleDataManager the level role data manager
+     * @param guildSettingsManager the guild settings manager
+     */
     public LevelRoleCommand(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager) {
         super("levelrole");
 
@@ -78,6 +87,13 @@ public class LevelRoleCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /levelrole settings list subcommand.
+     * <p>
+     * Provides an overview over the current guild's settings.
+     *
+     * @param event the command event
+     */
     private void listSettings(SlashCommandInteractionEvent event) {
         var settings = guildSettingsManager.getSettings(event.getGuild());
         var embedBuilder = new EmbedBuilder()
@@ -90,6 +106,13 @@ public class LevelRoleCommand extends AbstractCommand {
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
+    /**
+     * The /levelrole settings remove_old_roles subcommand.
+     * <p>
+     * Can be used to toggle whether old levelroles should be removed when a user gains ones with a higher level.
+     *
+     * @param event the command event
+     */
     private void removeOldRoles(SlashCommandInteractionEvent event) {
         boolean status = event.getOption("status").getAsBoolean();
 
@@ -106,6 +129,13 @@ public class LevelRoleCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /levelrole settings add_on_rejoin subcommand.
+     * <p>
+     * Can be used to toggle whether old levelroles should be added to a user when they rejoin the guild.
+     *
+     * @param event the command event
+     */
     private void addOnRejoin(SlashCommandInteractionEvent event) {
         boolean status = event.getOption("status").getAsBoolean();
 
@@ -122,11 +152,18 @@ public class LevelRoleCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /levelrole add subcommand.
+     * <p>
+     * Configures a new levelrole for the current guild, if it's not set up already.
+     * The same level may have multiple Discord roles assigned to it.
+     *
+     * @param event the command event
+     */
     private void add(SlashCommandInteractionEvent event) {
         var role = event.getOption("role").getAsRole();
         int level = event.getOption("level").getAsInt();
 
-        // if role already exists, cancels function
         var levelRoleOptional = levelRoleDataManager.getLevelRoleData(role, event.getGuild());
         if (levelRoleOptional.isPresent()) {
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
@@ -153,6 +190,13 @@ public class LevelRoleCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /levelrole remove subcommand.
+     * <p>
+     * Removes a new levelrole from the current guild, if it exists.
+     *
+     * @param event the command event
+     */
     private void remove(SlashCommandInteractionEvent event) {
         var role = event.getOption("role").getAsRole();
 
@@ -181,6 +225,13 @@ public class LevelRoleCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /levelrole list subcommand.
+     * <p>
+     * Provides an overview over all configured roles with their respective levels on the current guild.
+     *
+     * @param event the command event
+     */
     private void listRoles(SlashCommandInteractionEvent event) {
         List<LevelRoleData> levelRoles = levelRoleDataManager.getLevelRoles(event.getGuild()).stream()
                 .sorted(Comparator.comparingLong(LevelRoleData::level))
@@ -198,6 +249,13 @@ public class LevelRoleCommand extends AbstractCommand {
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
+    /**
+     * The /levelrole cleanup subcommand.
+     * <p>
+     * Removes all configured levelroles which have since been deleted from the Discord guild from the database.
+     *
+     * @param event the command event
+     */
     private void cleanup(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
         var guildRoles = guild.getRoles().stream()

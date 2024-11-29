@@ -10,9 +10,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Migrates Taka's .csv level export files in the "migration" folder to syrup's database.
+ */
 public class TakaMigrator {
     private final static Logger logger = LoggerFactory.getLogger(TakaMigrator.class);
 
+    /**
+     * Scans the "migration" folder for .csv files and attempts to import them.
+     *
+     * @param databaseManager the database manager
+     */
     public static void migrateTakaFiles(DatabaseManager databaseManager) {
         logger.info("Starting Taka migration...");
 
@@ -26,6 +34,16 @@ public class TakaMigrator {
         logger.info("Finished Taka migration!!");
     }
 
+    /**
+     * Imports the provided .csv file into the database, discarding but warning about all invalid or duplicate data.
+     * Afterward, the file is deleted automatically so it's only migrated once.
+     * <p>
+     * This method may take a while to run on larger files and will therefore delay the bot's startup.
+     * However, it is run synchronously before any connection to Discord servers to ensure changes from Discord won't prevent the import.
+     *
+     * @param path the path of the .csv file
+     * @param databaseManager the database manager
+     */
     private static void migrateFile(Path path, DatabaseManager databaseManager) {
         logger.info("Importing Taka file {}", path);
 

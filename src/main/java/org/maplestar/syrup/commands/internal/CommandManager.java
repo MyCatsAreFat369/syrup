@@ -31,7 +31,7 @@ public class CommandManager extends ListenerAdapter {
      */
     public void registerCommand(AbstractCommand command) {
         this.commands.add(command);
-        logger.info("Registered command {}", command.name());
+        logger.info("Registered command /{}", command.name());
     }
 
     /**

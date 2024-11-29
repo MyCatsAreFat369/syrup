@@ -16,8 +16,20 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 
+/**
+ * Utility class for generating images via the AWT library.
+ */
 public class ImageUtils {
-    public static byte[] generateImage(Member member, RankingData rankingData) throws IOException {
+    /**
+     * Creates an image containing a user's name, rank, level, XP amount, and remaining XP until level-up.
+     * Is based on a user's banner or alternatively their avatar.
+     *
+     * @param member the member
+     * @param rankingData the member's ranking
+     * @return the image in its byte representation
+     * @throws IOException if there's a problem fetching the images from Discord or encoding the newly created image
+     */
+    public static byte[] generateRankImage(Member member, RankingData rankingData) throws IOException {
         // Load the avatar & banner from Discord
         var profile = member.getUser().retrieveProfile().complete();
         var avatarUrl = member.getEffectiveAvatarUrl();
