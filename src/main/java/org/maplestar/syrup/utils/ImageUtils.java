@@ -24,6 +24,8 @@ public class ImageUtils {
         var bannerUrl = profile.getBannerUrl();
         BufferedImage avatarImage = loadImageFromUrl(avatarUrl + "?size=256");
         BufferedImage bannerImage;
+
+        // If there's no banner, use a cropped version of the avatar
         if (bannerUrl != null) {
             bannerImage = loadImageFromUrl(bannerUrl + "?size=1024");
         } else {
@@ -33,11 +35,6 @@ public class ImageUtils {
             g2dBanner.drawImage(bannerImageTemp, 0, -332, 1024, 1024, null);
             g2dBanner.dispose();
         }
-
-        // LOGIC:
-        // if Server Banner: loadServerBanner
-        // else if Global Banner: loadGlobalBanner
-        // else: loadAvatar, resize: 1024, position to show the middle of the avatar, so probably do pos = (0, -512) note the negative sign
 
         // Darken
         float scaleFactor = 0.5f;
@@ -55,20 +52,7 @@ public class ImageUtils {
         Kernel kernel = new Kernel(blurSize, blurSize, blurKernel);
         ConvolveOp convolveOp = new ConvolveOp(kernel, ConvolveOp.EDGE_ZERO_FILL, null);
 
-        int pad = blurSize / 2;
-        BufferedImage bannerPadded = new BufferedImage(bannerImage.getWidth() + pad * 2, bannerImage.getHeight() + pad * 2, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2dPadding = bannerPadded.createGraphics();
-
-        g2dPadding.setComposite(AlphaComposite.Clear);
-        g2dPadding.fillRect(0, 0, bannerImage.getWidth(), bannerImage.getHeight());
-        g2dPadding.setComposite(AlphaComposite.SrcOver);
-
-        g2dPadding.drawImage(bannerDarkened, pad, pad, null);
-        g2dPadding.dispose();
-
-        BufferedImage bannerBlurredPadded = convolveOp.filter(bannerPadded, null);
-
-        BufferedImage bannerBlurred = bannerBlurredPadded.getSubimage(pad, pad, bannerImage.getWidth(), bannerImage.getHeight());
+        BufferedImage bannerBlurred = convolveOp.filter(bannerDarkened, null);
 
         BufferedImage image = new BufferedImage(bannerImage.getWidth(), bannerImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
@@ -79,7 +63,14 @@ public class ImageUtils {
         // Draw the banner
         RoundRectangle2D.Double roundRect = new RoundRectangle2D.Double(0, 0, bannerImage.getWidth(), bannerImage.getHeight(), 100, 100);
         g2d.setClip(roundRect);
-        g2d.drawImage(bannerBlurred, 0, 0, null);
+
+        // Zoom in to hide darker edges
+        float zoomFactor = 1.1f;
+        int moveX = (int) (-bannerImage.getWidth() * (zoomFactor - 1) / 2);
+        int moveY = (int) (-bannerImage.getHeight() * (zoomFactor - 1) / 2);
+        int width = (int) (bannerImage.getWidth() * zoomFactor);
+        int height = (int) (bannerImage.getHeight() * zoomFactor);
+        g2d.drawImage(bannerBlurred, moveX, moveY, width, height, null);
 
         // Draw the avatar
         int avatarX = 52, avatarY = 52;
