@@ -41,7 +41,7 @@ public class Main {
         var commandManager = registerCommands(levelDataManager, blockDataManager, levelRoleDataManager, guildSettingsManager, levelChangeListener);
 
         var jda = JDABuilder.createDefault(config.botToken())
-                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES)
+                .enableIntents(GatewayIntent.GUILD_MESSAGES)
                 .addEventListeners(
                         commandManager,
                         new ExpGainListener(levelDataManager, blockDataManager, levelChangeListener)
