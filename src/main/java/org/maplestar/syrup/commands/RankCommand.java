@@ -85,7 +85,7 @@ public class RankCommand extends AbstractCommand {
                     """
                     *Something went wrong while generating your rank image, but here you go:*
                     
-                    **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP are required to level up.""".formatted(
+                    **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP is required to level up.""".formatted(
                             member.getEffectiveName(),
                             rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank(),
                             rankingData.levelData().level(),
