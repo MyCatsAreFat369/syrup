@@ -1,6 +1,7 @@
 package org.maplestar.syrup.data.migration;
 
 import org.maplestar.syrup.data.DatabaseManager;
+import org.maplestar.syrup.data.rank.LevelData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,8 @@ public class TakaMigrator {
         } catch (IOException exception) {
             logger.error("Failed to migrate Taka files", exception);
         }
+
+        logger.info("Finished Taka migration!!");
     }
 
     private static void migrateFile(Path path, DatabaseManager databaseManager) {
@@ -31,6 +34,14 @@ public class TakaMigrator {
                     .filter(line -> line.matches("\\d+,\\d+,\\d+"))
                     .map(MigrationData::of)
                     .toList();
+
+            logger.info("Finished parsing data, starting validation...");
+
+            importData.stream()
+                    .filter(migrationData -> migrationData.level() != LevelData.ZERO.setXP(migrationData.xp()).level())
+                    .forEach(migrationData -> logger.warn("Found inconsistent data: {}. Expected level {}", migrationData, LevelData.ZERO.setXP(migrationData.xp()).level()));
+
+            logger.info("Validated data, starting import into database...");
 
             int totalRows = 0;
             try (var connection = databaseManager.getConnection()) {
