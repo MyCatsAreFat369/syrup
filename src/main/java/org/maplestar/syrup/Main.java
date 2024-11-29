@@ -1,6 +1,7 @@
 package org.maplestar.syrup;
 
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.maplestar.syrup.commands.LevelRoleCommand;
 import org.maplestar.syrup.commands.RankCommand;
@@ -44,6 +45,7 @@ public class Main {
 
         var jda = JDABuilder.createDefault(config.botToken())
                 .enableIntents(GatewayIntent.GUILD_MESSAGES)
+                .setActivity(Activity.playing("NewWorld Online"))
                 .addEventListeners(
                         commandManager,
                         new ExpGainListener(levelDataManager, blockDataManager, levelChangeListener)
