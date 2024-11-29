@@ -9,7 +9,7 @@ public class EmbedColors {
     private static final Color primaryColor = new Color(167, 230, 112);
 
     /**
-     * The primary color to be used in all Discord embeds.
+     * The primary color to be used in all normal Discord embeds.
      *
      * @return the primary color
      */
@@ -17,6 +17,11 @@ public class EmbedColors {
         return primaryColor;
     }
 
+    /**
+     * The error color to be used to indicate a problem.
+     *
+     * @return the error color
+     */
     public static Color error() {
         return Color.RED;
     }

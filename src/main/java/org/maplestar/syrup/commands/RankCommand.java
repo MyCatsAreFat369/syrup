@@ -2,6 +2,7 @@ package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -26,12 +27,21 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The /rank command for displaying and managing the rank system.
+ */
 public class RankCommand extends AbstractCommand {
     private final Logger logger = LoggerFactory.getLogger(RankCommand.class);
     private final LevelDataManager levelDataManager;
     private final ExecutorService executorService;
     private final LevelChangeListener levelChangeListener;
 
+    /**
+     * Initializes the command.
+     *
+     * @param levelDataManager the level data manager
+     * @param levelChangeListener the level change listener
+     */
     public RankCommand(LevelDataManager levelDataManager, LevelChangeListener levelChangeListener) {
         super("rank");
 
@@ -70,6 +80,19 @@ public class RankCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /rank user subcommand.
+     * <p>
+     * Sends an image with the user's name, rank, level, XP, and remaining XP until level-up on the current guild.
+     * The user's banner or avatar (as a fallback) is used as the background.
+     * In case of a database failure, the rank will be "Invalid", and all other values zero.
+     * <p>
+     * If the image creation fails, the content is instead sent as an embed.
+     *
+     * @param event the command event
+     * @see ImageUtils
+     * @see RankingData#zero(User)
+     */
     private void user(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
@@ -77,7 +100,7 @@ public class RankCommand extends AbstractCommand {
         var rankingData = levelDataManager.getRankingData(member.getUser(), event.getGuild());
 
         try {
-            var imageBytes = ImageUtils.generateImage(member, rankingData);
+            var imageBytes = ImageUtils.generateRankImage(member, rankingData);
             event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
         } catch (Exception exception) {
             logger.error("Couldn't attach rank file", exception);
@@ -96,6 +119,15 @@ public class RankCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /rank leaderboard subcommand.
+     * <p>
+     * Displays at most 10 users' ranking information on the requested page (default: 1) for the current guild.
+     * If the page exceeds the minimum, it will default to 1.
+     * If the page exceeds the maximum, it will default to the maximum page.
+     *
+     * @param event the command event
+     */
     private void leaderboard(SlashCommandInteractionEvent event) {
         event.deferReply().queue();
 
@@ -165,6 +197,14 @@ public class RankCommand extends AbstractCommand {
         });
     }
 
+    /**
+     * The /rank edit subcommand.
+     * <p>
+     * Can be used by Administrators to manually alter a user's level or XP amount on the current guild.
+     * Levelroles will be applied accordingly.
+     *
+     * @param event the command event
+     */
     private void edit(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
 
@@ -214,6 +254,9 @@ public class RankCommand extends AbstractCommand {
         )).queue();
     }
 
+    /**
+     * Represents the type argument of the /rank edit subcommand.
+     */
     private enum RankCommandType {
         LEVEL, XP
     }

@@ -13,9 +13,17 @@ import org.maplestar.syrup.commands.internal.AbstractCommand;
 import org.maplestar.syrup.data.block.BlockDataManager;
 import org.maplestar.syrup.utils.EmbedMessage;
 
+/**
+ * The /xp command for excluding channels from the rank system.
+ */
 public class XPBlockCommand extends AbstractCommand {
     private final BlockDataManager blockDataManager;
 
+    /**
+     * Initializes the command.
+     *
+     * @param blockDataManager the block data manager
+     */
     public XPBlockCommand(BlockDataManager blockDataManager) {
         super("xp");
 
@@ -50,6 +58,13 @@ public class XPBlockCommand extends AbstractCommand {
         }
     }
 
+    /**
+     * The /xp list subcommand.
+     * <p>
+     * Provides an overview over all blocked channels on the current guild.
+     *
+     * @param event the command event
+     */
     private void list(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
 
@@ -67,6 +82,13 @@ public class XPBlockCommand extends AbstractCommand {
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
+    /**
+     * The /xp block subcommand.
+     * <p>
+     * Excludes the provided channel from the ranking system, if it hasn't been excluded already.
+     *
+     * @param event the command event
+     */
     private void block(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
         var channel = event.getOption("channel").getAsChannel();
@@ -92,6 +114,13 @@ public class XPBlockCommand extends AbstractCommand {
                 Users will no longer gain xp by chatting here.""")).queue();
     }
 
+    /**
+     * The /xp unblock subcommand.
+     * <p>
+     * Enables users to once again gain experience in the level system in the provided channel if it has previously been blocked.
+     *
+     * @param event the command event
+     */
     private void unblock(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
         var channel = event.getOption("channel").getAsChannel();
@@ -117,6 +146,13 @@ public class XPBlockCommand extends AbstractCommand {
                 Users will now gain xp by chatting here.""")).queue();
     }
 
+    /**
+     * The /xp cleanup subcommand.
+     * <p>
+     * Removes all blocked channels which have since been deleted from the Discord guild from the database.
+     *
+     * @param event the command event
+     */
     private void cleanup(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
         var guildChannels = guild.getChannels().stream()
