@@ -110,7 +110,7 @@ public class RankCommand extends AbstractCommand {
                     .setColor(EmbedColors.primary());
 
             String desc = String.format(
-                    "%s, you currently have **%,d** XP (Level **%d**) and are in position **%,d**",
+                    "%s, you currently have **%,d** XP (Level **%d**)" + (userRank.isInvalid() ? "" : " and are in position **%,d**\""),
                     event.getUser().getAsMention(),
                     userRank.levelData().xp(),
                     userRank.levelData().level(),
@@ -150,6 +150,10 @@ public class RankCommand extends AbstractCommand {
             // ok we're done
             // mazing
             // heh
+
+            if (rankedUsers.isEmpty()) {
+                desc = "There's no data for this guild";
+            }
 
             embedBuilder.setDescription(desc);
 
