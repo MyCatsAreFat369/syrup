@@ -24,3 +24,9 @@ dependencies {
 application {
     mainClass.set("org.maplestar.syrup.Main")
 }
+
+tasks {
+    compileJava {
+        options.encoding = "UTF-8"
+    }
+}
