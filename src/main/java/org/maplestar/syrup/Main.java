@@ -73,7 +73,7 @@ public class Main {
         logger.info("hi!!");
     }
 
-    private static CommandManager registerCommands(LevelDataManager levelDataManager, BlockDataManager blockDataManager, LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager, LevelChangeListener levelChangeListener) {
+    private static CommandManager registerCommands() {
         var commandManager = new CommandManager();
         commandManager.registerCommand(new LevelRoleCommand(levelRoleDataManager, guildSettingsManager));
         commandManager.registerCommand(new RankCommand(levelDataManager, levelChangeListener));
