@@ -125,7 +125,8 @@ public class LevelRoleCommand extends AbstractCommand {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to update level role settings.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
     }
 
@@ -148,7 +149,8 @@ public class LevelRoleCommand extends AbstractCommand {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to update level role settings.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
     }
 
@@ -186,7 +188,8 @@ public class LevelRoleCommand extends AbstractCommand {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to create reaction role.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
     }
 
@@ -221,7 +224,8 @@ public class LevelRoleCommand extends AbstractCommand {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to delete reaction role.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
     }
 
@@ -273,7 +277,8 @@ public class LevelRoleCommand extends AbstractCommand {
                         event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
                                 Oops! Failed to remove deleted roles.
                                 
-                                Please contact the bot developer as this is an internal issue.""")).queue();
+                                Please contact the bot developer as this is an internal issue."""))
+                                .queue();
                     }
                 });
     }
