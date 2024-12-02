@@ -21,6 +21,22 @@ public class EmbedMessage {
     }
 
     /**
+     * Creates an embed to be used for messages that don't represent an error.
+     * Contains a title
+     *
+     * @param title the title of the embed
+     * @param text the content of the embed
+     * @return the embed
+     */
+    public static MessageEmbed normalWithTitle(String title, String text) {
+        return new EmbedBuilder()
+                .setColor(EmbedColors.primary())
+                .setTitle(title)
+                .setDescription(text)
+                .build();
+    }
+
+    /**
      * Creates an embed to be used for messages that represent an error.
      *
      * @param text the content of the embed
