@@ -236,7 +236,8 @@ public class RankCommand extends AbstractCommand {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to edit the user's rank.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
             return;
         }
 

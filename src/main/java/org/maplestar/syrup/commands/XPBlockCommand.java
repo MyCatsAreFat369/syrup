@@ -100,18 +100,19 @@ public class XPBlockCommand extends AbstractCommand {
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, true);
-        if (!success) {
+        if (success) {
+            event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
+                This channel had been **added** to the xp-blocklist!
+                
+                Users will no longer gain xp by chatting here."""))
+                    .queue();
+        } else {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to toggle xp-block in this channel.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
-            return;
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
-
-        event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This channel had been **added** to the xp-blocklist!
-                
-                Users will no longer gain xp by chatting here.""")).queue();
     }
 
     /**
@@ -132,22 +133,24 @@ public class XPBlockCommand extends AbstractCommand {
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, false);
-        if (!success) {
+        if (success) {
+            event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
+                This channel has been **removed** from the xp-blocklist!\s
+                
+                Users will now gain xp by chatting here."""))
+                    .queue();
+
+        } else {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to toggle xp-block in this channel.
                     
-                    Please contact the bot developer as this is an internal issue.""")).queue();
-            return;
+                    Please contact the bot developer as this is an internal issue."""))
+                    .queue();
         }
-
-        event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This channel has been **removed** from the xp-blocklist!\s
-                
-                Users will now gain xp by chatting here.""")).queue();
     }
 
     /**
-     * The /xp cleanup subcommand.
+     * The /xp cleanup subcommand
      * <p>
      * Removes all blocked channels which have since been deleted from the Discord guild from the database.
      *
