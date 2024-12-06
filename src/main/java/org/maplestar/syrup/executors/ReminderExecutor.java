@@ -12,16 +12,29 @@ import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Scheduler that regularly checks for due reminders.
+ */
 public class ReminderExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ReminderExecutor.class);
     private final JDA jda;
     private final ReminderDataManager reminderDataManager;
 
+    /**
+     * Initializes the class.
+     *
+     * @param jda the JDA instance
+     * @param reminderDataManager the reminder data manager
+     */
     public ReminderExecutor(JDA jda, ReminderDataManager reminderDataManager) {
         this.jda = jda;
         this.reminderDataManager = reminderDataManager;
     }
 
+    /**
+     * Starts the scheduler. May be called before JDA is fully initialized.
+     * Automatically sends reminder messages if necessary.
+     */
     public void init() {
         try {
             jda.awaitReady();
