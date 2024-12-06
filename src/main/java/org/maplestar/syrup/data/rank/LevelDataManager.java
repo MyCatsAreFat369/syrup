@@ -18,7 +18,7 @@ public class LevelDataManager {
     private final DatabaseManager databaseManager;
 
     /**
-     * Initializes the class
+     * Initializes the class.
      *
      * @param databaseManager the database manager for database access
      */
@@ -119,6 +119,7 @@ public class LevelDataManager {
      * @param user the user
      * @param guild the guild
      * @param levelData the new {@link LevelData}
+     * @return false on database failure, otherwise true
      */
     public boolean setLevelData(User user, Guild guild, LevelData levelData) {
         try (var connection = databaseManager.getConnection()) {

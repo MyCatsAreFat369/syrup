@@ -11,17 +11,28 @@ import java.time.OffsetDateTime;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * Provides access to the reminders of each user.
+ */
 public class ReminderDataManager {
     private final Logger logger = LoggerFactory.getLogger(ReminderDataManager.class);
     private final DatabaseManager databaseManager;
     private final SortedSet<Reminder> reminderCache = new TreeSet<>();
 
+    /**
+     * Initializes this class.
+     *
+     * @param databaseManager the database manager
+     */
     public ReminderDataManager(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
 
         loadReminders();
     }
 
+    /**
+     * Loads all active reminders from the database into memory.
+     */
     private void loadReminders() {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT * FROM Reminders")) {
@@ -44,6 +55,12 @@ public class ReminderDataManager {
         }
     }
 
+    /**
+     * Returns the number of active reminders this user has created.
+     *
+     * @param user the user
+     * @return the number of reminders, or 0 if there are none
+     */
     public int getUserReminderCount(User user) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("SELECT COUNT(*) AS count FROM Reminders WHERE user_id = ?")) {
@@ -59,10 +76,23 @@ public class ReminderDataManager {
         }
     }
 
+    /**
+     * Returns a cached list of reminders sorted by their end date so that reminders that are due soon are at the beginning.
+     * <p>
+     * The cache is guaranteed to be up to date.
+     *
+     * @return a sorted list of reminders
+     */
     public SortedSet<Reminder> getSortedReminders() {
         return reminderCache;
     }
 
+    /**
+     * Saves the provided {@link Reminder} in the database.
+     *
+     * @param reminder the reminder
+     * @return false on database failure, otherwise true
+     */
     public boolean addReminder(Reminder reminder) {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Reminders (user_id, time, message, channel_id) VALUES (?, ?, ?, ?) RETURNING id")) {
@@ -82,18 +112,33 @@ public class ReminderDataManager {
         }
     }
 
+    /**
+     * Deletes the provided reminder from the cache and database.
+     * Has no effect when the reminder doesn't exist.
+     *
+     * @param reminder the reminder to delete
+     */
     public void deleteReminder(Reminder reminder) {
         reminderCache.remove(reminder);
 
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("DELETE FROM Reminders WHERE id = ?")) {
                 statement.setInt(1, reminder.id());
+                statement.executeUpdate();
             }
         } catch (SQLException exception) {
             logger.error("Couldn't delete reminder {}", reminder, exception);
         }
     }
 
+    /**
+     * Removes all active reminders of the provided user from the database and cache.
+     * <p>
+     * If there's a problem communicating with the database, reminders are loaded again when the bot restarts.
+     *
+     * @param user the user
+     * @return false on database failure, otherwise true
+     */
     public boolean nukeReminders(User user) {
         reminderCache.removeIf(reminder -> reminder.userID() == user.getIdLong());
 

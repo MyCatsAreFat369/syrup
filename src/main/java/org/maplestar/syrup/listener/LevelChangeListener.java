@@ -16,7 +16,7 @@ import java.util.Set;
 // oh my god our own event???
 
 /**
- * Listener that's called when the level of a user gets updated.
+ * Event listener that's called when the level of a user gets updated.
  */
 public class LevelChangeListener {
     private final LevelRoleDataManager levelRoleDataManager;

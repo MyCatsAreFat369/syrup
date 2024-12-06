@@ -73,6 +73,11 @@ public class Main {
         logger.info("hi!!");
     }
 
+    /**
+     * Registers the bot's commands with the {@link CommandManager} and subsequently JDA.
+     *
+     * @return the configured command manager
+     */
     private static CommandManager registerCommands() {
         var commandManager = new CommandManager();
         commandManager.registerCommand(new LevelRoleCommand(levelRoleDataManager, guildSettingsManager));

@@ -7,9 +7,17 @@ import org.maplestar.syrup.commands.internal.AbstractCommand;
 import org.maplestar.syrup.data.reminder.ReminderDataManager;
 import org.maplestar.syrup.utils.EmbedMessage;
 
+/**
+ * The /remindme-nuke command for deleting all reminders.
+ */
 public class RemindMeNukeCommand extends AbstractCommand {
     private final ReminderDataManager reminderDataManager;
 
+    /**
+     * Initializes the command.
+     *
+     * @param reminderDataManager the reminder data manager
+     */
     public RemindMeNukeCommand(ReminderDataManager reminderDataManager) {
         super("remindme-nuke");
 

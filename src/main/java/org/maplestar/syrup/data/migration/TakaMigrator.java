@@ -50,7 +50,7 @@ public class TakaMigrator {
         try {
             List<MigrationData> importData = Files.readAllLines(path).stream()
                     .filter(line -> line.matches("\\d+,\\d+,\\d+"))
-                    .map(MigrationData::of)
+                    .map(MigrationData::ofTaka)
                     .toList();
 
             logger.info("Finished parsing data, starting validation...");

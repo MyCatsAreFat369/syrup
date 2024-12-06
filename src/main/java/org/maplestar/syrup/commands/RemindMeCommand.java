@@ -14,9 +14,17 @@ import org.maplestar.syrup.utils.EmbedMessage;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+/**
+ * The /remindme command for creating reminders.
+ */
 public class RemindMeCommand extends AbstractCommand {
     private final ReminderDataManager reminderDataManager;
 
+    /**
+     * Initializes the command.
+     *
+     * @param reminderDataManager the reminder data manager
+     */
     public RemindMeCommand(ReminderDataManager reminderDataManager) {
         super("remindme");
 
@@ -33,17 +41,17 @@ public class RemindMeCommand extends AbstractCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        event.deferReply().queue(); // TODO: make this ephemeral?
+        event.deferReply().queue();
 
         var user = event.getUser();
         var timeString = event.getOption("time").getAsString();
         var message = event.getOption("message", null, OptionMapping::getAsString);
 
         if (reminderDataManager.getUserReminderCount(user) >= 100) {
-            event.getHook().editOriginalEmbeds(EmbedMessage.error(
-                    "Whoops! You've got... 100 pending remindme's!\n" +
-                        "Run ``/remindme-nuke`` to ~~clear~~ nuke all of them.\n" +
-                        "Choose wisely..."
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
+                            Whoops! You've got... 100 pending remindme's!
+                            Run ``/remindme-nuke`` to ~~clear~~ nuke all of them.
+                            Choose wisely..."""
             )).queue();
             return;
         }
