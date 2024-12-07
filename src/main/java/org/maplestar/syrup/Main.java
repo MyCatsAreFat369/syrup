@@ -102,8 +102,9 @@ public class Main {
             var url = Main.class.getResource("/fonts/KiwiMaru-Regular.ttf");
             var inputStream = url.openStream();
             graphicsEnvironment.registerFont(Font.createFont(Font.TRUETYPE_FONT, inputStream));
-        } catch (FontFormatException | IOException exception) {
-            logger.warn("Oops, KiwiMaru could not be registered:", exception);
+            logger.info("Registered font");
+        } catch (FontFormatException | IOException | NullPointerException exception) {
+            logger.warn("Oops, KiwiMaru could not be registered", exception);
         }
     }
 }
