@@ -64,7 +64,7 @@ public class TakaMigrator {
             int totalRows = 0;
             try (var connection = databaseManager.getConnection()) {
                 for (var userData : importData) {
-                    try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET level = level + Excluded.level, xp = xp + Excluded.xp")) {
+                    try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = level + Excluded.level, xp = xp + Excluded.xp")) {
                         statement.setLong(1, Long.parseLong(path.toFile().getName().replace(".csv", "")));
                         statement.setLong(2, userData.userID());
                         statement.setInt(3, userData.level());
