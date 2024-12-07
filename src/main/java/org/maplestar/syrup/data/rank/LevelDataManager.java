@@ -94,7 +94,7 @@ public class LevelDataManager {
 
         List<RankingData> result = new ArrayList<>();
         try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT user_id, level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))")) {
+            try (var statement = connection.prepareStatement("SELECT user_id, level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC, user_id DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))")) {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, page);
                 statement.setLong(3, guild.getIdLong());
