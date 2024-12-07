@@ -204,7 +204,7 @@ public class ImageUtils {
 
         // All ranking people
         var ids = rankedUsers.stream()
-                .map(rankedUser -> rankedUser.userID())
+                .map(RankingData::userID)
                 .toList();
         var members = guild.retrieveMembersByIds(ids).get();
 
