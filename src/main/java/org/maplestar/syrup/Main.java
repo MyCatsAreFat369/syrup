@@ -20,6 +20,9 @@ import org.maplestar.syrup.listener.LevelChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.io.IOException;
+
 /**
  * The entry point of the app.
  */
@@ -38,6 +41,8 @@ public class Main {
      * @param args the arguments (assumed to be empty)
      */
     public static void main(String[] args) {
+        loadFonts();
+
         var config = Config.load();
 
         var databaseManager = new DatabaseManager(config);
@@ -86,5 +91,19 @@ public class Main {
         commandManager.registerCommand(new RemindMeNukeCommand(reminderDataManager));
         commandManager.registerCommand(new XPBlockCommand(blockDataManager));
         return commandManager;
+    }
+
+    /**
+     * Loads the fonts required to draw this bot's images from the application's resources.
+     */
+    private static void loadFonts() {
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        try {
+            var url = Main.class.getResource("/fonts/KiwiMaru-Regular.ttf");
+            var inputStream = url.openStream();
+            graphicsEnvironment.registerFont(Font.createFont(Font.TRUETYPE_FONT, inputStream));
+        } catch (FontFormatException | IOException exception) {
+            logger.warn("Oops, KiwiMaru could not be registered:", exception);
+        }
     }
 }
