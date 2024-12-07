@@ -1,6 +1,5 @@
 package org.maplestar.syrup.commands;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,10 +16,8 @@ import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.rank.RankingData;
 import org.maplestar.syrup.listener.LevelChangeListener;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
-import org.maplestar.syrup.utils.EmbedColors;
 import org.maplestar.syrup.utils.EmbedMessage;
 import org.maplestar.syrup.utils.ImageUtils;
-import org.maplestar.syrup.utils.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,6 +228,10 @@ public class RankCommand extends AbstractCommand {
             newLevelData = oldLevelData.setLevel(value);
         }
 
+        if (newLevelData.level() >= 420) {
+            newLevelData = LevelData.MAX;
+        }
+
         var success = levelDataManager.setLevelData(user, event.getGuild(), newLevelData);
         if (!success) {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
@@ -247,10 +248,10 @@ public class RankCommand extends AbstractCommand {
 
         event.getHook().editOriginalEmbeds(EmbedMessage.normal(
                 String.format(
-                    "Set user %s's %s to %d",
+                    "Set user %s's %s to %s",
                     user.getAsMention(),
                     type.toString().toLowerCase(),
-                    value
+                    type == RankCommandType.LEVEL && value != newLevelData.level() ? "the maximum of " + LevelData.MAX.level() : value
                 )
         )).queue();
     }

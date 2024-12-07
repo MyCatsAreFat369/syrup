@@ -7,7 +7,8 @@ package org.maplestar.syrup.data.rank;
  * @param xp the XP
  */
 public record LevelData(int level, long xp) {
-    public static LevelData ZERO = new LevelData(0, 0);
+    public static final LevelData ZERO = new LevelData(0, 0);
+    public static final LevelData MAX = LevelData.ZERO.setLevel(420);
 
     /**
      * Adds the specified amount of XP and recalculates the level if necessary.
