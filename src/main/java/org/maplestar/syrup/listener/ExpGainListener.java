@@ -56,8 +56,9 @@ public class ExpGainListener extends ListenerAdapter {
         var rand = ThreadLocalRandom.current();
         int addXP = rand.nextInt(15, 31);
         var oldLevelData = levelDataManager.getLevelData(user, guild);
-        var newLevelData = oldLevelData.addXP(addXP);
+        if (oldLevelData.level() >= 420) return;
 
+        var newLevelData = oldLevelData.addXP(addXP);
         levelDataManager.setLevelData(event.getAuthor(), event.getGuild(), newLevelData);
 
         if (newLevelData.level() != oldLevelData.level()) {

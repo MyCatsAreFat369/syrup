@@ -122,6 +122,8 @@ public class LevelDataManager {
      * @return false on database failure, otherwise true
      */
     public boolean setLevelData(User user, Guild guild, LevelData levelData) {
+        if (levelData.level() >= 420) levelData = LevelData.MAX;
+
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp")) {
                 statement.setLong(1, guild.getIdLong());
