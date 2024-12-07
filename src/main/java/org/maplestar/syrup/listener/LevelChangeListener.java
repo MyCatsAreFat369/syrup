@@ -124,8 +124,8 @@ public class LevelChangeListener {
         if (settings.removeOldRoles()) {
             // get the max lower role level and add that role to member
             var maxLevelRole = rolesToProcess.getFirst();
-            for(var levelRole : rolesToProcess) {
-                if(levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
+            for (var levelRole : rolesToProcess) {
+                if (levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
             }
 
             var theRole = guild.getRoleById(maxLevelRole.roleID());

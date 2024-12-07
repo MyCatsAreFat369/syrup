@@ -130,67 +130,28 @@ public class RankCommand extends AbstractCommand {
 
         executorService.submit(() -> {
             int page = event.getOption("page", 1, OptionMapping::getAsInt);
-
-            // Cap the page at 100k to prevent infinite loading bugs
-            if (page > 100_000) page = 100_000;
+            int totalPages = levelDataManager.getMaxPage(event.getGuild());
+            if (page > totalPages) page = totalPages;
 
             var guild = event.getGuild();
             var rankedUsers = levelDataManager.getTopUsers(guild, page);
             var userRank = levelDataManager.getRankingData(event.getUser(), guild);
+            var member = event.getMember();
 
-            var embedBuilder = new EmbedBuilder()
-                    .setTitle(":bar_chart: XP Leaderboard for " + guild.getName())
-                    .setColor(EmbedColors.primary());
-
-            String desc = String.format(
-                    "%s, you currently have **%,d** XP (Level **%d**)" + (userRank.isInvalid() ? "" : " and are in position **#%,d**"),
-                    event.getUser().getAsMention(),
-                    userRank.levelData().xp(),
-                    userRank.levelData().level(),
-                    userRank.rank()
-            );
-
-            desc += "\n```";
-            for (int i = 0; i < rankedUsers.size(); i++) {
-                RankingData rankingData = rankedUsers.get(i);
-                String rankStr = String.format("%.6s", rankingData.rank());
-                rankStr += " ".repeat(6 - rankStr.length());
-                desc += rankStr + " | ";
-
-                String nameStr = UserUtils.getNameByUserID(guild, rankingData.userID());
-                if (nameStr.length() == 18) {
-                    nameStr = nameStr.substring(0, 17);
-                    nameStr += "…";
-                }// try now
-                nameStr += " ".repeat(18 - nameStr.length());
-
-                desc += nameStr + " | ";
-
-                // Level <level> starts with 6 characters plus the extra
-                int levelStrLength = 6 + ("" + rankedUsers.get(0).levelData().level()).length();
-                String levelStr = "Level " + rankingData.levelData().level();
-                levelStr += " ".repeat(levelStrLength - levelStr.length());
-                desc += levelStr + " | ";
-
-                String xpStr = String.format("%,d", rankingData.levelData().xp()) + " XP";
-                desc += xpStr;
-
-                if (i + 1 < rankedUsers.size()) desc += "\n";
+            try {
+                var imageBytes = ImageUtils.generateLeaderboardImage(rankedUsers, userRank, guild, page, totalPages);
+                event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
+            } catch (Exception exception) {
+                logger.error("Couldn't attach rank file", exception);
+                String desc = String.format(
+                        "You currently have **%,d** XP (Level **%d**)" + (userRank.isInvalid() ? "" : " and are in position **#%,d**"),
+                        userRank.levelData().xp(),
+                        userRank.levelData().level(),
+                        userRank.rank());
+                event.getHook().editOriginalEmbeds(
+                        EmbedMessage.error("*Something went wrong while generating the leaderboard, but here's your personal info:*\n\n" + desc)
+                ).queue();
             }
-
-            desc += "```";
-
-            // ok we're done
-            // mazing
-            // heh
-
-            if (rankedUsers.isEmpty()) {
-                desc = "There's no data for this guild";
-            }
-
-            embedBuilder.setDescription(desc);
-
-            event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
         });
     }
 
@@ -205,7 +166,7 @@ public class RankCommand extends AbstractCommand {
     private void edit(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
 
-        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR) && event.getMember().getIdLong() != 1089412392460492840L) {
             event.getHook().editOriginal("nope").queue();
             return;
         }

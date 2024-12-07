@@ -43,7 +43,7 @@ public record LevelData(int level, long xp) {
      * @return a new {@link LevelData} representing the new level
      */
     public LevelData setLevel(int level) {
-        if(level < 0) return this;
+        if (level < 0) return this;
         return new LevelData(level, requiredTotalForLevelup(level - 1));
     }
 
@@ -56,8 +56,13 @@ public record LevelData(int level, long xp) {
      * @return the amount of XP required
      */
     public long requiredTotalForLevelup(int level) {
-        if(level < 0) return 0;
+        if (level < 0) return 0;
         return (long) (72L * Math.pow(level, 2) + 50L * level + 100L);
+    }
+
+    public long requiredForLevelupTotal() {
+        if (level <= 0) return 100;
+        return requiredTotalForLevelup(level) - requiredTotalForLevelup(level - 1);
     }
 
     /**
