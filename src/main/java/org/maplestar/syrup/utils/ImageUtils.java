@@ -155,7 +155,7 @@ public class ImageUtils {
         g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
 
         // Leaderboard Avatar and Title
-        g2d.drawImage(loadGuildAvatar(guild), 60, 85, 185, 185, null);
+        g2d.drawImage(generateAvatar(loadGuildAvatar(guild)), 60, 85, 185, 185, null);
 
         String titleText = "Leaderboard for " + guild.getName();
         int titleFontSize = 80;
@@ -226,7 +226,7 @@ public class ImageUtils {
         for (int i = 0; i < rankedUsers.size(); i++) {
             double setX = 220 + 784 * Math.floor((i + 0.001) / 5.0);
             double setY = 290 + 160 * (i % 5);
-            var rankImage = generateRankNumberImage(i + 1);
+            var rankImage = generateRankNumberImage(rankedUsers.get(i).rank());
             double scaleFactor2 = 0.6 - 0.25 * (("" + (i + 1)).length() / 5.0);
             g2d.drawImage(rankImage,
                     (int)setX + 140 - (int) (rankImage.getWidth() * scaleFactor2 / 2),
