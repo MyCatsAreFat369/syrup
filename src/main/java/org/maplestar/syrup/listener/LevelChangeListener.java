@@ -1,12 +1,17 @@
 package org.maplestar.syrup.listener;
 
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.maplestar.syrup.data.levelrole.LevelRoleData;
 import org.maplestar.syrup.data.levelrole.LevelRoleDataManager;
 import org.maplestar.syrup.data.settings.GuildSettings;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +24,7 @@ import java.util.Set;
  * Event listener that's called when the level of a user gets updated.
  */
 public class LevelChangeListener {
+    private final Logger logger = LoggerFactory.getLogger(LevelChangeListener.class);
     private final LevelRoleDataManager levelRoleDataManager;
     private final GuildSettingsManager guildSettingsManager;
 
@@ -95,18 +101,13 @@ public class LevelChangeListener {
             }
 
             // newRoles overrides removalRoles in case of conflicts
-            removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
-            newRoles.removeIf(member.getRoles()::contains);
-            guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
+            applyRoles(member, guild, newRoles, removalRoles);
             return;
         }
 
         // add all affected roles because removeOldRoles is false
         newRoles.addAll(getRolesToAdd(guild, settings, affectedRoles));
-
-        removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
-        newRoles.removeIf(member.getRoles()::contains);
-        guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
+        applyRoles(member, guild, newRoles, removalRoles);
     }
 
     /**
@@ -136,6 +137,25 @@ public class LevelChangeListener {
                     .map(levelRole -> guild.getRoleById(levelRole.roleID()))
                     .filter(Objects::nonNull)
                     .toList();
+        }
+    }
+
+    /**
+     * Attempts to add and remove the provided roles to the member on the specified guild.
+     * Will only remove roles if they aren't to be added and ignore any roles the user may already have.
+     *
+     * @param member the member
+     * @param guild the guild the member is on
+     * @param newRoles the roles that should be added to the member
+     * @param removalRoles the roles that should be removed from the member
+     */
+    private void applyRoles(Member member, Guild guild, Set<Role> newRoles, Set<Role> removalRoles) {
+        try {
+            removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
+            newRoles.removeIf(member.getRoles()::contains);
+            guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
+        } catch (InsufficientPermissionException | HierarchyException exception) {
+            logger.warn("Couldn't update roles for user {} on guild {}", member.getUser().getName(), guild.getName(), exception);
         }
     }
 }
