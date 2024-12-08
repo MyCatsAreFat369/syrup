@@ -85,8 +85,10 @@ public class Main {
      */
     private static CommandManager registerCommands() {
         var commandManager = new CommandManager();
+        commandManager.registerCommand(new EditRankCommand(levelDataManager, levelChangeListener));
+        commandManager.registerCommand(new LeaderboardCommand(levelDataManager));
         commandManager.registerCommand(new LevelRoleCommand(levelRoleDataManager, guildSettingsManager));
-        commandManager.registerCommand(new RankCommand(levelDataManager, levelChangeListener));
+        commandManager.registerCommand(new RankCommand(levelDataManager));
         commandManager.registerCommand(new RemindMeCommand(reminderDataManager));
         commandManager.registerCommand(new RemindMeNukeCommand(reminderDataManager));
         commandManager.registerCommand(new XPBlockCommand(blockDataManager));
