@@ -4,8 +4,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.maplestar.syrup.Main;
 import org.maplestar.syrup.data.rank.RankingData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -22,7 +20,6 @@ import java.util.List;
  * Utility class for generating images via the AWT library.
  */
 public class ImageUtils {
-    private static final Logger logger = LoggerFactory.getLogger(ImageUtils.class);
     private static final String defaultFont = "Kiwi Maru";
 
     /**
@@ -209,8 +206,8 @@ public class ImageUtils {
         var ids = rankedUsers.stream()
                 .map(RankingData::userID)
                 .toList();
-        var members = guild.retrieveMembersByIds(ids).get();
 
+        var members = guild.retrieveMembersByIds(ids).get();
         for (int i = 0; i < rankedUsers.size(); i++) {
             long userID = rankedUsers.get(i).userID();
             double setX = 220 + 784 * Math.floor((i + 0.001) / 5.0);
@@ -220,6 +217,7 @@ public class ImageUtils {
             for (var m : members) {
                 if (m.getIdLong() == userID) {
                     member = m;
+                    break;
                 }
             }
 
@@ -272,15 +270,14 @@ public class ImageUtils {
         double fontSize = 50;
         g2d.setFont(new Font(defaultFont, Font.PLAIN, 50));
         var fontMetrics = g2d.getFontMetrics();
+
         int length = fontMetrics.charsWidth(name.toCharArray(), 0, name.length());
         int maxLength = 550;
-        logger.info(""+length);
-        if(length > maxLength)
-        {
-            if(length > maxLength * 2) length = (int) (maxLength * 2);
+        if (length > maxLength) {
+            if (length > maxLength * 2) length = maxLength * 2;
             fontSize *= maxLength / (double) length;
-            logger.info("I happen");
         }
+
         g2d.setFont(new Font(defaultFont, Font.PLAIN, (int) fontSize));
         g2d.setColor(Color.WHITE);
         g2d.drawString(name, textX, textY);
