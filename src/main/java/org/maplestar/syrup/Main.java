@@ -66,6 +66,8 @@ public class Main {
                 )
                 .build();
 
+        //logger.info("default url: " + jda.retrieveUserById(1089412392460492840L).submit().join().getDefaultAvatarUrl());
+
         jda.updateCommands()
                 .addCommands(commandManager.getCommandData())
                 .queue();
