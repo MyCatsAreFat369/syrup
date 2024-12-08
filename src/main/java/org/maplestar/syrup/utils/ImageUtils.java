@@ -4,6 +4,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import org.maplestar.syrup.Main;
 import org.maplestar.syrup.data.rank.RankingData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -20,6 +22,7 @@ import java.util.List;
  * Utility class for generating images via the AWT library.
  */
 public class ImageUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ImageUtils.class);
     private static final String defaultFont = "Kiwi Maru";
 
     /**
@@ -191,7 +194,7 @@ public class ImageUtils {
         int youX = image.getWidth() / 2 - 375;
         int youY = 1140;
         g2d.drawImage(generateLeaderboardRankImage(userRank, "You"), youX, youY, 750, 140, null);
-        g2d.drawImage(generateAvatar(loadMemberAvatar(memberYou)), youX - 20, youY - 20, 160, 160, null);
+        g2d.drawImage(generateAvatar(loadMemberAvatar(memberYou, userRank.userID())), youX - 20, youY - 20, 160, 160, null);
         var youRankImage = generateRankNumberImage(userRank.rank());
         double scaleFactor = 0.6 - 0.3 * (("" + (userRank.rank())).length() / 5.0);
         g2d.drawImage(youRankImage,
@@ -209,18 +212,24 @@ public class ImageUtils {
         var members = guild.retrieveMembersByIds(ids).get();
 
         for (int i = 0; i < rankedUsers.size(); i++) {
+            long userID = rankedUsers.get(i).userID();
             double setX = 220 + 784 * Math.floor((i + 0.001) / 5.0);
             double setY = 290 + 160 * (i % 5);
-            var member = members.get(i);
+
+            Member member = null;
             for (var m : members) {
-                if (m.getIdLong() == rankedUsers.get(i).userID()) {
+                if (m.getIdLong() == userID) {
                     member = m;
                 }
             }
 
-            String memberName = member.getEffectiveName();
+            String memberName = "Unknown User (" + rankedUsers.get(i).userID() + ")"; // noooo why we dont want a user id, lets call them Unknown User or something
+            if (member != null) {
+                memberName = member.getEffectiveName();
+            }
+
             g2d.drawImage(generateLeaderboardRankImage(rankedUsers.get(i), memberName), (int) setX, (int) setY, 750, 140, null);
-            g2d.drawImage(generateAvatar(loadMemberAvatar(member)), (int) setX - 10, (int) setY - 10, 160, 160, null);
+            g2d.drawImage(generateAvatar(loadMemberAvatar(member, userID)), (int) setX - 10, (int) setY - 10, 160, 160, null);
         }
 
         for (int i = 0; i < rankedUsers.size(); i++) {
@@ -260,7 +269,19 @@ public class ImageUtils {
         g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
 
         int textX = 220, textY = 65;
+        double fontSize = 50;
         g2d.setFont(new Font(defaultFont, Font.PLAIN, 50));
+        var fontMetrics = g2d.getFontMetrics();
+        int length = fontMetrics.charsWidth(name.toCharArray(), 0, name.length());
+        int maxLength = 550;
+        logger.info(""+length);
+        if(length > maxLength)
+        {
+            if(length > maxLength * 2) length = (int) (maxLength * 2);
+            fontSize *= maxLength / (double) length;
+            logger.info("I happen");
+        }
+        g2d.setFont(new Font(defaultFont, Font.PLAIN, (int) fontSize));
         g2d.setColor(Color.WHITE);
         g2d.drawString(name, textX, textY);
 
@@ -338,7 +359,8 @@ public class ImageUtils {
         return ImageIO.read(imageURL);
     }
 
-    private static BufferedImage loadMemberAvatar(Member member)throws IOException {
+    private static BufferedImage loadMemberAvatar(Member member, long userID) throws IOException {
+        if(member == null) return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
         var avatarUrl = member.getEffectiveAvatarUrl();
         return loadImageFromUrl(avatarUrl + "?size=256");
     }
