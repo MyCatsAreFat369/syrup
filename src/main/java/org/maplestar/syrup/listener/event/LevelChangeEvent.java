@@ -11,8 +11,8 @@ import org.maplestar.syrup.data.rank.LevelData;
  *
  * @param guild the guild the user leveled up in
  * @param user the user
- * @param newLevelData the user's current {@link LevelData}
  * @param oldLevelData the user's previous {@link LevelData}
+ * @param newLevelData the user's current {@link LevelData}
  */
-public record LevelChangeEvent(Guild guild, User user, LevelData newLevelData, LevelData oldLevelData) {
+public record LevelChangeEvent(Guild guild, User user, LevelData oldLevelData, LevelData newLevelData) {
 }

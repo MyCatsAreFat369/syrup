@@ -57,7 +57,7 @@ public class Main {
         var commandManager = registerCommands();
 
         var jda = JDABuilder.createDefault(config.botToken())
-                .enableIntents(GatewayIntent.GUILD_MESSAGES)
+                .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS)
                 .setActivity(Activity.playing("NewWorld Online"))
                 .addEventListeners(
                         commandManager,
