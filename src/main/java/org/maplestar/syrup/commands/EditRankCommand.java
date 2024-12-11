@@ -92,7 +92,7 @@ public class EditRankCommand extends AbstractCommand {
         }
 
         if (newLevelData.level() != oldLevelData.level()) {
-            levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, newLevelData, oldLevelData));
+            levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, oldLevelData, newLevelData));
         }
 
         event.getHook().editOriginalEmbeds(EmbedMessage.normal(
