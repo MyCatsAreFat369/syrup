@@ -7,11 +7,12 @@ import org.maplestar.syrup.data.rank.RankingData;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -76,7 +77,7 @@ public class ImageUtils {
         URL url = Main.class.getResource("/images/syrupicon.png");
         InputStream inputStream = url.openStream();
         BufferedImage imageSyrup = ImageIO.read(inputStream);
-        g2d.drawImage(imageSyrup, 1300, 570, 256, 256, null);
+        g2d.drawImage(imageSyrup, 1375, 570, 192, 192, null);
 
         // Draw the avatar
         int avatarX = 52, avatarY = 200;
@@ -132,10 +133,12 @@ public class ImageUtils {
         g2d.setClip(null);
 
         // Draw XP remaining
-        int smallerTextSize = 60;
-        g2d.setFont(new Font("NotoSans", Font.PLAIN, smallerTextSize));
-        g2d.setColor(Color.WHITE);
-        g2d.drawString(String.format("%,d remaining XP", remainingXP), 1125 - ("" + remainingXP).length() * 33, xpY - 50);
+        if (rankingData.levelData().level() < 420) {
+            int smallerTextSize = 60;
+            g2d.setFont(new Font("NotoSans", Font.PLAIN, smallerTextSize));
+            g2d.setColor(Color.WHITE);
+            g2d.drawString(String.format("%,d remaining XP", remainingXP), 1125 - ("" + remainingXP).length() * 33, xpY - 50);
+        }
 
         // Free graphics object to save resources
         g2d.dispose();
@@ -165,14 +168,12 @@ public class ImageUtils {
         int lengthThreshold = (int) (image.getWidth() * 0.75);
         if (length > lengthThreshold) {
             titleFontSize *= (int) (lengthThreshold / (double) length);
-            length = lengthThreshold;
 
             g2d.setFont(new Font(defaultFont, Font.BOLD, titleFontSize));
         }
 
         g2d.setColor(Color.WHITE);
-        g2d.drawString(titleText, image.getWidth() / 2 - length / 2, 200);
-
+        g2d.drawString(titleText, 290, 200);
         // Syrup
         URL url = Main.class.getResource("/images/syrupicon.png");
         InputStream inputStream = url.openStream();
@@ -190,7 +191,7 @@ public class ImageUtils {
         var memberYou = guild.retrieveMemberById(userRank.userID()).submit().join();
         int youX = image.getWidth() / 2 - 375;
         int youY = 1140;
-        g2d.drawImage(generateLeaderboardRankImage(userRank, "You"), youX, youY, 750, 140, null);
+        g2d.drawImage(generateLeaderboardRankImage(userRank, "You", true), youX, youY, 750, 140, null);
         g2d.drawImage(generateAvatar(loadMemberAvatar(memberYou, userRank.userID())), youX - 20, youY - 20, 160, 160, null);
         var youRankImage = generateRankNumberImage(userRank.rank());
         double scaleFactor = 0.6 - 0.3 * (("" + (userRank.rank())).length() / 5.0);
@@ -221,12 +222,12 @@ public class ImageUtils {
                 }
             }
 
-            String memberName = "Unknown User (" + rankedUsers.get(i).userID() + ")"; // noooo why we dont want a user id, lets call them Unknown User or something
+            String memberName = "Unknown User (" + rankedUsers.get(i).userID() + ")";
             if (member != null) {
                 memberName = member.getEffectiveName();
             }
 
-            g2d.drawImage(generateLeaderboardRankImage(rankedUsers.get(i), memberName), (int) setX, (int) setY, 750, 140, null);
+            g2d.drawImage(generateLeaderboardRankImage(rankedUsers.get(i), memberName, rankedUsers.get(i).userID() == userRank.userID()), (int) setX, (int) setY, 750, 140, null);
             g2d.drawImage(generateAvatar(loadMemberAvatar(member, userID)), (int) setX - 10, (int) setY - 10, 160, 160, null);
         }
 
@@ -259,11 +260,12 @@ public class ImageUtils {
         return outputStream.toByteArray();
     }
 
-    public static BufferedImage generateLeaderboardRankImage(RankingData rankingData, String name) {
+    public static BufferedImage generateLeaderboardRankImage(RankingData rankingData, String name, boolean isYou) {
         BufferedImage image = new BufferedImage(800, 150, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(new Color(126, 126, 126));
+        if (isYou) g2d.setColor(new Color(102, 121, 189));
         g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
 
         int textX = 220, textY = 65;
@@ -320,7 +322,7 @@ public class ImageUtils {
         BufferedImage bufferedImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2dFont = bufferedImage.createGraphics();
 
-        String rankStr = "" + rank;
+        String rankStr = String.valueOf(rank);
         g2dFont.setFont(font);
         FontMetrics fontMetrics = g2dFont.getFontMetrics();
         int width = fontMetrics.charsWidth(rankStr.toCharArray(), 0, rankStr.length());
@@ -357,7 +359,7 @@ public class ImageUtils {
     }
 
     private static BufferedImage loadMemberAvatar(Member member, long userID) throws IOException {
-        if(member == null) return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
+        if (member == null) return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
         var avatarUrl = member.getEffectiveAvatarUrl();
         return loadImageFromUrl(avatarUrl + "?size=256");
     }
