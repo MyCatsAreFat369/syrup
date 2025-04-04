@@ -13,6 +13,7 @@ import org.maplestar.syrup.data.migration.TakaMigrator;
 import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.reminder.ReminderDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
+import org.maplestar.syrup.data.xpblock.XPBlockDataManager;
 import org.maplestar.syrup.executors.ReminderExecutor;
 import org.maplestar.syrup.listener.ExpGainListener;
 import org.maplestar.syrup.listener.GuildMemberJoinListener;
@@ -30,6 +31,7 @@ public class Main {
     private final static Logger logger = LoggerFactory.getLogger(Main.class);
     private static LevelDataManager levelDataManager;
     private static BlockDataManager blockDataManager;
+    private static XPBlockDataManager xpBlockDataManager;
     private static LevelRoleDataManager levelRoleDataManager;
     private static GuildSettingsManager guildSettingsManager;
     private static LevelChangeListener levelChangeListener;
@@ -50,6 +52,7 @@ public class Main {
 
         levelDataManager = new LevelDataManager(databaseManager);
         blockDataManager = new BlockDataManager(databaseManager);
+        xpBlockDataManager = new XPBlockDataManager(databaseManager);
         levelRoleDataManager = new LevelRoleDataManager(databaseManager);
         guildSettingsManager = new GuildSettingsManager(databaseManager);
         reminderDataManager = new ReminderDataManager(databaseManager);
@@ -61,7 +64,7 @@ public class Main {
                 .setActivity(Activity.playing("NewWorld Online"))
                 .addEventListeners(
                         commandManager,
-                        new ExpGainListener(levelDataManager, blockDataManager, levelChangeListener),
+                        new ExpGainListener(levelDataManager, blockDataManager, xpBlockDataManager, levelChangeListener),
                         new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener)
                 )
                 .build();
@@ -91,7 +94,8 @@ public class Main {
         commandManager.registerCommand(new RankCommand(levelDataManager));
         commandManager.registerCommand(new RemindMeCommand(reminderDataManager));
         commandManager.registerCommand(new RemindMeNukeCommand(reminderDataManager));
-        commandManager.registerCommand(new XPBlockCommand(blockDataManager));
+        commandManager.registerCommand(new XPBlockChannelCommand(blockDataManager));
+        commandManager.registerCommand(new XPBlockUserCommand(xpBlockDataManager));
         return commandManager;
     }
 

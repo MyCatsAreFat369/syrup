@@ -54,6 +54,7 @@ public class DatabaseManager {
         try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS Ranks (guild_id BIGINT, user_id BIGINT, level INTEGER, xp BIGINT, PRIMARY KEY (guild_id, user_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS BlockedChannels (guild_id BIGINT, channel_id BIGINT, PRIMARY KEY (guild_id, channel_id))");
+            statement.execute("CREATE TABLE IF NOT EXISTS BlockedUsers (guild_id BIGINT, user_id BIGINT, time TIMESTAMP, PRIMARY KEY (guild_id, user_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS GuildSettings (guild_id BIGINT PRIMARY KEY, remove_old_roles BOOLEAN, add_on_join BOOLEAN)");
             statement.execute("CREATE TABLE IF NOT EXISTS LevelRoles (guild_id BIGINT, role_id BIGINT, level INTEGER, PRIMARY KEY (guild_id, role_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS Reminders (id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY, user_id BIGINT, time TIMESTAMP, message TEXT, channel_id BIGINT)");
