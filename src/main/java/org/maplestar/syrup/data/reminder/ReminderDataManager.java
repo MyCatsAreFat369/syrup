@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.OffsetDateTime;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -97,7 +96,7 @@ public class ReminderDataManager {
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Reminders (user_id, time, message, channel_id) VALUES (?, ?, ?, ?) RETURNING id")) {
                 statement.setLong(1, reminder.userID());
-                statement.setTimestamp(2, new Timestamp(reminder.time().toInstant(OffsetDateTime.now().getOffset()).toEpochMilli()));
+                statement.setTimestamp(2, new Timestamp(reminder.timeInMillis()));
                 statement.setString(3, reminder.message());
                 statement.setLong(4, reminder.channelID());
 

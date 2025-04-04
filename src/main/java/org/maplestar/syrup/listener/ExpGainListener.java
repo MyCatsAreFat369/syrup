@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.maplestar.syrup.data.block.BlockDataManager;
 import org.maplestar.syrup.data.rank.LevelDataManager;
+import org.maplestar.syrup.data.xpblock.XPBlockDataManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 import org.maplestar.syrup.utils.CooldownProvider;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ExpGainListener extends ListenerAdapter {
     private final LevelDataManager levelDataManager;
     private final BlockDataManager blockDataManager;
+    private final XPBlockDataManager xpBlockDataManager;
     private final LevelChangeListener levelChangeListener;
     private final CooldownProvider<User> cooldownProvider = CooldownProvider.withDuration(Duration.ofSeconds(10));
 
@@ -27,9 +29,10 @@ public class ExpGainListener extends ListenerAdapter {
      * @param blockDataManager the block data manager
      * @param levelChangeListener the level change listener, to notify when a user levels up
      */
-    public ExpGainListener(LevelDataManager levelDataManager, BlockDataManager blockDataManager, LevelChangeListener levelChangeListener) {
+    public ExpGainListener(LevelDataManager levelDataManager, BlockDataManager blockDataManager, XPBlockDataManager xpBlockDataManager, LevelChangeListener levelChangeListener) {
         this.levelDataManager = levelDataManager;
         this.blockDataManager = blockDataManager;
+        this.xpBlockDataManager = xpBlockDataManager;
         this.levelChangeListener = levelChangeListener;
     }
 
@@ -45,10 +48,12 @@ public class ExpGainListener extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
         if (!event.isFromGuild()) return;
-        if (blockDataManager.isBlocked(event.getChannel(), event.getGuild())) return;
 
         var guild = event.getGuild();
         var user = event.getAuthor();
+
+        if (blockDataManager.isBlocked(event.getChannel(), event.getGuild())) return;
+        if (xpBlockDataManager.isBlocked(guild, event.getMember())) return;
 
         if (cooldownProvider.isOnCooldown(user)) return;
         cooldownProvider.applyCooldown(user);
@@ -59,7 +64,7 @@ public class ExpGainListener extends ListenerAdapter {
         if (oldLevelData.level() >= 420) return;
 
         var newLevelData = oldLevelData.addXP(addXP);
-        levelDataManager.setLevelData(event.getAuthor(), event.getGuild(), newLevelData);
+        levelDataManager.setLevelData(user, guild, newLevelData);
 
         if (newLevelData.level() != oldLevelData.level()) {
             levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, oldLevelData, newLevelData));

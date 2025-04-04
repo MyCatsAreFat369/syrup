@@ -24,7 +24,16 @@ public record Reminder(int id, long userID, LocalDateTime time, @Nullable String
      * @return the time in epoch seconds
      */
     public long timeInSeconds() {
-        return time.toInstant(OffsetDateTime.now().getOffset()).toEpochMilli() / 1000;
+        return timeInMillis() / 1000;
+    }
+
+    /**
+     * Converts this reminder's end time to milliseconds.
+     *
+     * @return the time in milliseconds
+     */
+    public long timeInMillis() {
+        return time.toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
     }
 
     /**

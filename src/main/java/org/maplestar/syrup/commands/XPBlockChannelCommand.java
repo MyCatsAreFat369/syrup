@@ -14,9 +14,9 @@ import org.maplestar.syrup.data.block.BlockDataManager;
 import org.maplestar.syrup.utils.EmbedMessage;
 
 /**
- * The /xp command for excluding channels from the rank system.
+ * The /xp-channel command for excluding channels from the rank system.
  */
-public class XPBlockCommand extends AbstractCommand {
+public class XPBlockChannelCommand extends AbstractCommand {
     private final BlockDataManager blockDataManager;
 
     /**
@@ -24,8 +24,8 @@ public class XPBlockCommand extends AbstractCommand {
      *
      * @param blockDataManager the block data manager
      */
-    public XPBlockCommand(BlockDataManager blockDataManager) {
-        super("xp");
+    public XPBlockChannelCommand(BlockDataManager blockDataManager) {
+        super("xp-channel");
 
         this.blockDataManager = blockDataManager;
     }
@@ -59,7 +59,7 @@ public class XPBlockCommand extends AbstractCommand {
     }
 
     /**
-     * The /xp list subcommand.
+     * The /xp-channel list subcommand.
      * <p>
      * Provides an overview over all blocked channels on the current guild.
      *
@@ -83,7 +83,7 @@ public class XPBlockCommand extends AbstractCommand {
     }
 
     /**
-     * The /xp block subcommand.
+     * The /xp-channel block subcommand.
      * <p>
      * Excludes the provided channel from the ranking system, if it hasn't been excluded already.
      *
@@ -116,7 +116,7 @@ public class XPBlockCommand extends AbstractCommand {
     }
 
     /**
-     * The /xp unblock subcommand.
+     * The /xp-channel unblock subcommand.
      * <p>
      * Enables users to once again gain experience in the level system in the provided channel if it has previously been blocked.
      *
@@ -150,7 +150,7 @@ public class XPBlockCommand extends AbstractCommand {
     }
 
     /**
-     * The /xp cleanup subcommand
+     * The /xp-channel cleanup subcommand
      * <p>
      * Removes all blocked channels which have since been deleted from the Discord guild from the database.
      *
