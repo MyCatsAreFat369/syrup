@@ -7,6 +7,10 @@ import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Event listener that's called when a new member joins the guild.
  * Used to automatically re-apply roles if the guild settings are configured that way.
@@ -15,6 +19,8 @@ public class GuildMemberJoinListener extends ListenerAdapter {
     private final GuildSettingsManager guildSettingsManager;
     private final LevelDataManager levelDataManager;
     private final LevelChangeListener levelChangeListener;
+
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     /**
      * Initializes the class.
@@ -37,15 +43,17 @@ public class GuildMemberJoinListener extends ListenerAdapter {
      */
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        var user = event.getUser();
-        var guild = event.getGuild();
+        executor.schedule(() -> {
+            var user = event.getUser();
+            var guild = event.getGuild();
 
-        var guildSettings = guildSettingsManager.getSettings(guild);
-        if (!guildSettings.addOnRejoin()) return;
+            var guildSettings = guildSettingsManager.getSettings(guild);
+            if (!guildSettings.addOnRejoin()) return;
 
-        var levelData = levelDataManager.getLevelData(user, guild);
-        if (levelData.level() != 0) {
-            levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, LevelData.ZERO, levelData));
-        }
+            var levelData = levelDataManager.getLevelData(user, guild);
+            if (levelData.level() != 0) {
+                levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, LevelData.ZERO, levelData));
+            }
+        }, 10, TimeUnit.SECONDS);
     }
 }
