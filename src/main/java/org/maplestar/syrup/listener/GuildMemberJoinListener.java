@@ -2,6 +2,7 @@ package org.maplestar.syrup.listener;
 
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.maplestar.syrup.data.rank.LevelData;
 import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
@@ -42,7 +43,7 @@ public class GuildMemberJoinListener extends ListenerAdapter {
      * @see org.maplestar.syrup.data.settings.GuildSettings
      */
     @Override
-    public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+    public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
         executor.schedule(() -> {
             var user = event.getUser();
             var guild = event.getGuild();
