@@ -38,7 +38,7 @@ public class ImageUtils {
         var avatarUrl = member.getEffectiveAvatarUrl();
         var bannerUrl = profile.getBannerUrl();
         var accentColor = profile.getAccentColor();
-        BufferedImage avatarImage = loadImageFromUrl(avatarUrl + "?size=256");
+        BufferedImage avatarImage = loadMemberAvatar(member, member.getIdLong());
         BufferedImage bannerImage;
 
         // If there's no banner, use a cropped version of the avatar
@@ -81,7 +81,7 @@ public class ImageUtils {
 
         // Draw the avatar
         int avatarX = 52, avatarY = 200;
-        int avatarWidth = avatarImage.getWidth() * 2, avatarHeight = avatarImage.getHeight() * 2;
+        int avatarWidth = 256 * 2, avatarHeight = 256 * 2;
         Ellipse2D.Double circle = new Ellipse2D.Double(avatarX, avatarY, avatarWidth, avatarHeight);
         g2d.setClip(circle); // try now
         g2d.drawImage(avatarImage, avatarX, avatarY, avatarWidth, avatarHeight, null); // AWESOME
