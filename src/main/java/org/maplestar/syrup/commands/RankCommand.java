@@ -58,7 +58,19 @@ public class RankCommand extends AbstractCommand {
         event.deferReply().queue();
 
         var member = event.getOption("user", event.getMember(), OptionMapping::getAsMember);
-        var rankingData = levelDataManager.getRankingData(member.getUser(), event.getGuild());
+        if (member == null) {
+            event.getHook().editOriginalEmbeds(EmbedMessage.error(
+                            """
+                            This user isn't a member of the guild anymore, or they have deleted their account!
+                            If you would still like to know their level and xp, please run ``/download leaderboard``
+                            and find their User ID in the file in your favorite text editor or Excel! (Usually through
+                            Ctrl+F or F3)."""
+            )).queue();
+            return;
+        }
+
+        RankingData rankingData;
+        rankingData = levelDataManager.getRankingData(member.getUser(), event.getGuild());
 
         try {
             var imageBytes = ImageUtils.generateRankImage(member, rankingData);
