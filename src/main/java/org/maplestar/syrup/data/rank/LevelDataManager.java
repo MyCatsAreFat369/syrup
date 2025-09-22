@@ -80,6 +80,35 @@ public class LevelDataManager {
     }
 
     /**
+     * Returns the entire leaderboard in the specified guild.
+     * The returned data is unordered and doesn't contain actual rankings.
+     * </p>
+     * Guaranteed to only be empty if there is no data for the provided guild.
+     *
+     * @param guild the guild
+     * @return the list of users with their ranks in the entire leaderboard. May be empty or contain any number of entries.
+     */
+    public List<RankingData> getEntireLeaderboard(Guild guild) {
+        List<RankingData> result = new ArrayList<>();
+        try (var connection = databaseManager.getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT user_id, level, xp FROM Ranks WHERE guild_id = ?")) {
+                statement.setLong(1, guild.getIdLong());
+
+                var resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
+                    result.add(new RankingData(resultSet.getLong("user_id"), 0, levelData));
+                }
+
+                return result;
+            }
+        } catch (SQLException exception) {
+            logger.error("Couldn't access leaderboard for guild {}", guild.getId(), exception);
+            return List.of();
+        }
+    }
+
+    /**
      * Returns a list of the top users in the specified guild, limited to 10 entries per page and offset by (page * 10) - 10.
      * <p>
      * Guaranteed to only be empty if there is no data for the provided guild.
