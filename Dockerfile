@@ -9,5 +9,6 @@ WORKDIR /app
 
 COPY --from=build /home/gradle/build/install/Syrup/bin/Syrup bin/Syrup
 COPY --from=build /home/gradle/build/install/Syrup/lib/ lib/
+RUN apk add font-noto-all
 
 ENTRYPOINT ["bin/Syrup"]
