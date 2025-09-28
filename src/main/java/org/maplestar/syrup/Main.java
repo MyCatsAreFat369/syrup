@@ -104,14 +104,25 @@ public class Main {
      * Loads the fonts required to draw this bot's images from the application's resources.
      */
     private static void loadFonts() {
+        loadFont("/fonts/KiwiMaru-Regular.ttf");
+        loadFont("/fonts/NotoSansJP-Medium.ttf");
+    }
+
+    /**
+     * Load a specific font by its path in the "resources" directory.
+     *
+     * @param path the path to the font
+     */
+    private static void loadFont(String path) {
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
         try {
-            var url = Main.class.getResource("/fonts/KiwiMaru-Regular.ttf");
+            var url = Main.class.getResource(path);
             var inputStream = url.openStream();
-            graphicsEnvironment.registerFont(Font.createFont(Font.TRUETYPE_FONT, inputStream));
-            logger.info("Registered font");
+            var font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+            graphicsEnvironment.registerFont(font);
+            logger.info("Registered font {}", font.getFontName()); // yay
         } catch (FontFormatException | IOException | NullPointerException exception) {
-            logger.warn("Oops, KiwiMaru could not be registered", exception);
+            logger.warn("Oops, font could not be registered", exception);
         }
     }
 }

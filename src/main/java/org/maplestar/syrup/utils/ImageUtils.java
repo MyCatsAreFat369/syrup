@@ -21,7 +21,8 @@ import java.util.List;
  * Utility class for generating images via the AWT library.
  */
 public class ImageUtils {
-    private static final String defaultFont = "Kiwi Maru";
+    private static final String kiwiMaruFont = "Kiwi Maru";
+    private static final String notoSansFont = "Noto Sans JP";
 
     /**
      * Creates an image containing a user's name, rank, level, XP amount, and remaining XP until level-up.
@@ -92,14 +93,14 @@ public class ImageUtils {
         // Draw the username
         int textX = 50, textY = 880;
         int nameSize = 120;
-        g2d.setFont(new Font("NotoSans", Font.BOLD, nameSize));
+        g2d.setFont(new Font(notoSansFont, Font.BOLD, nameSize));
         g2d.setColor(Color.WHITE);
         g2d.drawString(member.getEffectiveName(), textX, textY);
 
         // Draw Rank + Level + XP
         int normalTextSize = 80;
         int rankingX = 70, rankingY = 1150;
-        g2d.setFont(new Font("NotoSans", Font.BOLD, normalTextSize));
+        g2d.setFont(new Font(notoSansFont, Font.BOLD, normalTextSize));
         g2d.setColor(Color.WHITE);
         g2d.drawString("Rank " + (rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank()), rankingX - 10, textY + nameSize - 25);
         g2d.drawString("Level " + rankingData.levelData().level(), rankingX, rankingY);
@@ -135,7 +136,7 @@ public class ImageUtils {
         // Draw XP remaining
         if (rankingData.levelData().level() < 420) {
             int smallerTextSize = 60;
-            g2d.setFont(new Font("NotoSans", Font.PLAIN, smallerTextSize));
+            g2d.setFont(new Font(notoSansFont, Font.PLAIN, smallerTextSize));
             g2d.setColor(Color.WHITE);
             g2d.drawString(String.format("%,d remaining XP", remainingXP), 1125 - ("" + remainingXP).length() * 33, xpY - 50);
         }
@@ -162,14 +163,14 @@ public class ImageUtils {
 
         String titleText = "Leaderboard for " + guild.getName();
         int titleFontSize = 80;
-        g2d.setFont(new Font(defaultFont, Font.BOLD, titleFontSize));
+        g2d.setFont(new Font(kiwiMaruFont, Font.BOLD, titleFontSize));
         var fontMetrics = g2d.getFontMetrics();
         int length = fontMetrics.charsWidth(titleText.toCharArray(), 0, titleText.length());
         int lengthThreshold = (int) (image.getWidth() * 0.75);
         if (length > lengthThreshold) {
             titleFontSize *= (int) (lengthThreshold / (double) length);
 
-            g2d.setFont(new Font(defaultFont, Font.BOLD, titleFontSize));
+            g2d.setFont(new Font(kiwiMaruFont, Font.BOLD, titleFontSize));
         }
 
         g2d.setColor(Color.WHITE);
@@ -182,7 +183,7 @@ public class ImageUtils {
 
         // Footer (current page, total pages)
         String footerText = "Page " + currentPage + " / " + totalPages;
-        g2d.setFont(new Font(defaultFont, Font.BOLD, 30));
+        g2d.setFont(new Font(notoSansFont, Font.BOLD, 30));
         fontMetrics = g2d.getFontMetrics();
         length = fontMetrics.charsWidth(footerText.toCharArray(), 0, footerText.length());
         g2d.drawString(footerText, image.getWidth() / 2 - length / 2, 1350);
@@ -270,7 +271,7 @@ public class ImageUtils {
 
         int textX = 220, textY = 65;
         double fontSize = 50;
-        g2d.setFont(new Font(defaultFont, Font.PLAIN, 50));
+        g2d.setFont(new Font(notoSansFont, Font.PLAIN, 50));
         var fontMetrics = g2d.getFontMetrics();
 
         int length = fontMetrics.charsWidth(name.toCharArray(), 0, name.length());
@@ -280,11 +281,11 @@ public class ImageUtils {
             fontSize *= maxLength / (double) length;
         }
 
-        g2d.setFont(new Font(defaultFont, Font.PLAIN, (int) fontSize));
+        g2d.setFont(new Font(notoSansFont, Font.PLAIN, (int) fontSize));
         g2d.setColor(Color.WHITE);
         g2d.drawString(name, textX, textY);
 
-        g2d.setFont(new Font(defaultFont, Font.PLAIN, 35));
+        g2d.setFont(new Font(notoSansFont, Font.PLAIN, 35));
         g2d.drawString("Level " + rankingData.levelData().level(), textX, textY + 55);
         g2d.drawString("|", textX + 200, textY + 55);
         g2d.drawString(String.format("%,d XP", rankingData.levelData().xp()), textX  + 265, textY + 55);
@@ -317,7 +318,7 @@ public class ImageUtils {
     }
 
     private static BufferedImage generateRankNumberImage(long rank) {
-        Font font = new Font(defaultFont, Font.PLAIN, 100);
+        Font font = new Font(notoSansFont, Font.PLAIN, 100);
 
         BufferedImage bufferedImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2dFont = bufferedImage.createGraphics();
