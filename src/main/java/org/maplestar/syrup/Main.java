@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * The entry point of the app.
@@ -105,7 +106,7 @@ public class Main {
      */
     private static void loadFonts() {
         loadFont("/fonts/KiwiMaru-Regular.ttf");
-        loadFont("/fonts/NotoSansJP-Medium.ttf");
+        //loadFont("/fonts/NotoSansJP-Medium.ttf");
     }
 
     /**
@@ -115,6 +116,8 @@ public class Main {
      */
     private static void loadFont(String path) {
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        logger.info("Available Font Families: {}", Arrays.toString(graphicsEnvironment.getAvailableFontFamilyNames()));
+
         try {
             var url = Main.class.getResource(path);
             var inputStream = url.openStream();
