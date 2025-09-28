@@ -3,7 +3,7 @@ FROM eclipse-temurin:latest AS build
 COPY . .
 RUN ./gradlew installDist --no-daemon
 
-FROM eclipse-temurin:latest AS runtime
+FROM debian:trixie AS runtime
 
 WORKDIR /app
 
