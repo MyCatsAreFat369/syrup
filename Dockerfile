@@ -1,7 +1,7 @@
-FROM eclipse-temurin:latest AS build
+FROM gradle:jdk21-alpine AS build
 
 COPY . .
-RUN ./gradlew installDist --no-daemon
+RUN gradle clean installDist --no-daemon
 
 FROM eclipse-temurin:21-alpine AS runtime
 
