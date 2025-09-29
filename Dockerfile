@@ -9,10 +9,10 @@ WORKDIR /app
 
 COPY --from=build /home/gradle/build/install/Syrup/bin/Syrup bin/Syrup
 COPY --from=build /home/gradle/build/install/Syrup/lib/ lib/
-RUN apk add font-misc-misc
-RUN apk add font-terminus font-inconsolata font-dejavu font-noto font-noto-cjk font-awesome font-noto-extra
-RUN apk add font-vollkorn font-misc-cyrillic font-mutt-misc font-screen-cyrillic font-winitzki-cyrillic font-cronyx-cyrillic
-RUN apk add font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc
-RUN apk add font-isas-misc
+RUN apk add font-arabic-misc font-awesome font-cronyx-cyrillic font-dejavu font-inconsolata font-ipa font-isas-misc font-jis-misc \
+    font-misc-cyrillic font-misc-misc font-mutt-misc font-noto font-noto-arabic font-noto-armenian font-noto-cherokee font-noto-cjk \
+    font-noto-devanagari font-noto-emoji font-noto-ethiopic font-noto-extra font-noto-georgian font-noto-hebrew font-noto-lao  \
+    font-noto-malayalam font-noto-tamil font-noto-thaana font-noto-thai font-noto-tibetan font-screen-cyrillic font-sony-misc  \
+    font-terminus font-vollkorn font-winitzki-cyrillic
 
 ENTRYPOINT ["bin/Syrup"]
