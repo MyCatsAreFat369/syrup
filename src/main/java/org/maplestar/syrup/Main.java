@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * The entry point of the app.
@@ -94,8 +93,8 @@ public class Main {
         commandManager.registerCommand(new LeaderboardCommand(levelDataManager));
         commandManager.registerCommand(new LevelRoleCommand(levelRoleDataManager, guildSettingsManager));
         commandManager.registerCommand(new RankCommand(levelDataManager));
+        commandManager.registerCommand(new ReminderCommand(reminderDataManager));
         commandManager.registerCommand(new RemindMeCommand(reminderDataManager));
-        commandManager.registerCommand(new RemindMeNukeCommand(reminderDataManager));
         commandManager.registerCommand(new XPBlockChannelCommand(blockDataManager));
         commandManager.registerCommand(new XPBlockUserCommand(xpBlockDataManager));
         return commandManager;
@@ -115,7 +114,6 @@ public class Main {
      */
     private static void loadFont(String path) {
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        logger.info("Available Font Families: {}", Arrays.toString(graphicsEnvironment.getAvailableFontFamilyNames()));
 
         try {
             var url = Main.class.getResource(path);
@@ -124,7 +122,7 @@ public class Main {
             graphicsEnvironment.registerFont(font);
             logger.info("Registered font {}", font.getFontName()); // yay
         } catch (FontFormatException | IOException | NullPointerException exception) {
-            logger.warn("Oops, font could not be registered", exception);
+            logger.warn("Oops, font " + path + " could not be registered", exception);
         }
     }
 }

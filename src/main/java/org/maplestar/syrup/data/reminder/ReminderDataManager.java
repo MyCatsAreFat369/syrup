@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Provides access to the reminders of each user.
@@ -51,6 +50,61 @@ public class ReminderDataManager {
             }
         } catch (SQLException exception) {
             logger.error("Failed to load reminders", exception);
+        }
+    }
+
+    public Optional<Reminder> getReminderByID(int id) {
+        try(var connection = databaseManager.getConnection()) {
+            try(var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE id = ?")) {
+                statement.setInt(1, id);
+
+                var resultSet = statement.executeQuery();
+                if (!resultSet.next()) return Optional.empty();
+
+                Reminder reminder = new Reminder(
+                        resultSet.getInt("id"),
+                        resultSet.getLong("user_id"),
+                        resultSet.getTimestamp("time").toLocalDateTime(),
+                        resultSet.getString("message"),
+                        resultSet.getLong("channel_id")
+                );
+
+                return Optional.of(reminder);
+            }
+        } catch (SQLException exception) {
+            logger.error("Couldn't fetch reminder with id {}", id, exception);
+            return Optional.empty();
+        }
+    }
+
+    // not sortedset btw because i wanna sort by most recently made
+    public List<Reminder> getPaginatedRemindersOfUser(User user, int page) {
+        if (page < 1) page = 1;
+
+        List<Reminder> result = new ArrayList<>();
+        try (var connection = databaseManager.getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
+                statement.setLong(1, user.getIdLong());
+                statement.setLong(2, page);
+                statement.setLong(3, user.getIdLong());
+
+                var resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    Reminder reminder = new Reminder(
+                            resultSet.getInt("id"),
+                            resultSet.getLong("user_id"),
+                            resultSet.getTimestamp("time").toLocalDateTime(),
+                            resultSet.getString("message"),
+                            resultSet.getLong("channel_id")
+                    );
+                    result.add(reminder);
+                }
+
+                return result;
+            }
+        } catch (SQLException exception) {
+            logger.error("Couldn't get recent reminders of user {} at page {}", user.getName(), page, exception);
+            return List.of();
         }
     }
 
@@ -116,8 +170,9 @@ public class ReminderDataManager {
      * Has no effect when the reminder doesn't exist.
      *
      * @param reminder the reminder to delete
+     * @return false on database failure, otherwise true
      */
-    public void deleteReminder(Reminder reminder) {
+    public boolean deleteReminder(Reminder reminder) {
         reminderCache.remove(reminder);
 
         try (var connection = databaseManager.getConnection()) {
@@ -127,7 +182,10 @@ public class ReminderDataManager {
             }
         } catch (SQLException exception) {
             logger.error("Couldn't delete reminder {}", reminder, exception);
+            return false;
         }
+
+        return true;
     }
 
     /**
