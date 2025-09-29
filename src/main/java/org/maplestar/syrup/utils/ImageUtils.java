@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class ImageUtils {
     private static final String kiwiMaruFont = "Kiwi Maru";
-    private static final String notoSansFont = "Noto Sans";
+    private static final String notoSansFont = "Noto Sans JP";
 
     /**
      * Creates an image containing a user's name, rank, level, XP amount, and remaining XP until level-up.
