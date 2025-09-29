@@ -106,7 +106,6 @@ public class Main {
      */
     private static void loadFonts() {
         loadFont("/fonts/KiwiMaru-Regular.ttf");
-        //loadFont("/fonts/NotoSansJP-Medium.ttf");
     }
 
     /**

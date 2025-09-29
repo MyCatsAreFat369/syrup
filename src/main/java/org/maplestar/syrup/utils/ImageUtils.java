@@ -90,19 +90,24 @@ public class ImageUtils {
         // Reset clip so the text isn't clipped
         g2d.setClip(null);
 
-        // Draw the username
+        // Draw the username and fit it appropriately
         int textX = 50, textY = 880;
-        int nameSize = 120;
+        String name = member.getEffectiveName();
+        System.out.println((int) (image.getWidth() * 0.9));
+        int nameInitialSize = 120;
+        int nameSize = fitText(name, (int) (image.getWidth() * 0.9), notoSansFont, nameInitialSize, g2d);
         g2d.setFont(new Font(notoSansFont, Font.BOLD, nameSize));
         g2d.setColor(Color.WHITE);
-        g2d.drawString(member.getEffectiveName(), textX, textY);
+        g2d.drawString(name, textX, textY);
+
 
         // Draw Rank + Level + XP
         int normalTextSize = 80;
         int rankingX = 70, rankingY = 1150;
         g2d.setFont(new Font(notoSansFont, Font.BOLD, normalTextSize));
+        int rankHeight = g2d.getFontMetrics().getHeight(); // to anchor it top-left
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Rank " + (rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank()), rankingX - 10, textY + nameSize - 25);
+        g2d.drawString("Rank " + (rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank()), rankingX - 10, textY + rankHeight);
         g2d.drawString("Level " + rankingData.levelData().level(), rankingX, rankingY);
 
         BufferedImage imageXP = new BufferedImage(1500, 25, BufferedImage.TYPE_INT_ARGB);
@@ -161,21 +166,14 @@ public class ImageUtils {
         // Leaderboard Avatar and Title
         g2d.drawImage(generateAvatar(loadGuildAvatar(guild)), 60, 85, 185, 185, null);
 
+        // Set font and size for title appropriately
         String titleText = "Leaderboard for " + guild.getName();
-        int titleFontSize = 80;
+        int titleFontSize = fitText(titleText, (int) (image.getWidth() * 0.75),  kiwiMaruFont,80, g2d);
         g2d.setFont(new Font(kiwiMaruFont, Font.BOLD, titleFontSize));
-        var fontMetrics = g2d.getFontMetrics();
-        int length = fontMetrics.charsWidth(titleText.toCharArray(), 0, titleText.length());
-        int lengthThreshold = (int) (image.getWidth() * 0.75);
-        if (length > lengthThreshold) {
-            titleFontSize *= (int) (lengthThreshold / (double) length);
-
-            g2d.setFont(new Font(kiwiMaruFont, Font.BOLD, titleFontSize));
-        }
 
         g2d.setColor(Color.WHITE);
         g2d.drawString(titleText, 290, 200);
-        // Syrup
+        // Syrup Icon
         URL url = Main.class.getResource("/images/syrupicon.png");
         InputStream inputStream = url.openStream();
         BufferedImage imageSyrup = ImageIO.read(inputStream);
@@ -184,8 +182,8 @@ public class ImageUtils {
         // Footer (current page, total pages)
         String footerText = "Page " + currentPage + " / " + totalPages;
         g2d.setFont(new Font(notoSansFont, Font.BOLD, 30));
-        fontMetrics = g2d.getFontMetrics();
-        length = fontMetrics.charsWidth(footerText.toCharArray(), 0, footerText.length());
+        FontMetrics fontMetrics = g2d.getFontMetrics();
+        int length = fontMetrics.charsWidth(footerText.toCharArray(), 0, footerText.length());
         g2d.drawString(footerText, image.getWidth() / 2 - length / 2, 1350);
 
         // You
@@ -368,5 +366,17 @@ public class ImageUtils {
     private static BufferedImage loadGuildAvatar(Guild guild) throws IOException {
         var avatarUrl = guild.getIconUrl();
         return loadImageFromUrl(avatarUrl + "?size=256");
+    }
+
+    private static int fitText(String text, int maxWidth, String font, int initialFontSize, Graphics2D g2d) {
+        int finalFontSize = initialFontSize;
+        g2d.setFont(new Font(font, Font.BOLD, finalFontSize));
+        var fontMetrics = g2d.getFontMetrics();
+        int length = fontMetrics.charsWidth(text.toCharArray(), 0, text.length());
+        if (length > maxWidth) {
+            finalFontSize = (int) (finalFontSize * (maxWidth / (double) length));
+        }
+
+        return finalFontSize;
     }
 }
