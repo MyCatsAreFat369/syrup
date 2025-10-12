@@ -70,7 +70,7 @@ public class ReminderCommand extends AbstractCommand {
 
         for (var reminder : reminders) {
             String message = reminder.message();
-            if (message == null) message = "";
+            if (message == null) message = "Ping pong!";
             if (message.length() > 500) message = message.substring(0, 500) + "...";
 
             embedBuilder.addField(
