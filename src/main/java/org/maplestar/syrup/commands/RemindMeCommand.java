@@ -61,7 +61,7 @@ public class RemindMeCommand extends AbstractCommand {
             duration = DurationUtils.durationStringToMillis(timeString);
         } catch (IllegalArgumentException exception) {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Not a valid time string! Valid options are: y, d, h, m, s.
+                    Not a valid time string! Valid options are: y, w, d, h, m, s.
                     
                     *Some examples of a valid time are "30s" or "5d 12h"*
                     """))
