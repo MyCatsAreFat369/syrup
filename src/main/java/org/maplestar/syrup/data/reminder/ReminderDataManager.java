@@ -53,6 +53,13 @@ public class ReminderDataManager {
         }
     }
 
+    /**
+     * Returns the reminder with the specified ID.
+     * Empty if the reminder doesn't exist or already expired.
+     *
+     * @param id the reminder ID
+     * @return the reminder, or empty if it doesn't exist
+     */
     public Optional<Reminder> getReminderByID(int id) {
         try(var connection = databaseManager.getConnection()) {
             try(var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE id = ?")) {
@@ -77,7 +84,14 @@ public class ReminderDataManager {
         }
     }
 
-    // not sortedset btw because i wanna sort by most recently made
+    /**
+     * Returns a list of reminders on the requested page.
+     * The list will never be empty if the user has created a reminder.
+     *
+     * @param user the user
+     * @param page the page
+     * @return a list of up to five reminders
+     */
     public List<Reminder> getPaginatedRemindersOfUser(User user, int page) {
         if (page < 1) page = 1;
 
