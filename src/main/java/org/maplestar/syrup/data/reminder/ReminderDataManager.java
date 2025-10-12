@@ -85,7 +85,7 @@ public class ReminderDataManager {
     }
 
     /**
-     * Returns a list of reminders on the requested page.
+     * Returns a list of reminders on the requested page ordered by their expiration date.
      * The list will never be empty if the user has created a reminder.
      *
      * @param user the user
@@ -97,7 +97,7 @@ public class ReminderDataManager {
 
         List<Reminder> result = new ArrayList<>();
         try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? ORDER BY time LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
                 statement.setLong(1, user.getIdLong());
                 statement.setLong(2, page);
                 statement.setLong(3, user.getIdLong());
