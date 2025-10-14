@@ -2,6 +2,7 @@ package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -36,7 +37,7 @@ public class RankCommand extends AbstractCommand {
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "View your rank")
-                .setGuildOnly(true)
+                .setContexts(InteractionContextType.GUILD)
                 .addOption(OptionType.USER, "user", "The user", false);
     }
 
