@@ -65,7 +65,7 @@ public class Main {
                 .addEventListeners(
                         commandManager,
                         new ExpGainListener(levelDataManager, blockDataManager, xpBlockDataManager, levelChangeListener),
-                        new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener)
+                        new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener, levelRoleDataManager)
                 )
                 .build();
 
