@@ -373,7 +373,7 @@ public class ImageUtils {
 
         String avatarUrl;
         if (member == null) {
-            avatarUrl = user.getAvatarUrl();
+            avatarUrl = user.getEffectiveAvatarUrl();
         } else {
             avatarUrl = member.getEffectiveAvatarUrl();
         }
