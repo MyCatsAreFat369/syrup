@@ -34,7 +34,6 @@ public class RemindMeCommand extends AbstractCommand {
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "Create a reminder for yourself")
-                .setGuildOnly(true)
                 .addOption(OptionType.STRING, "time", "The time", true)
                 .addOption(OptionType.STRING, "message", "A custom message");
     }
@@ -69,9 +68,11 @@ public class RemindMeCommand extends AbstractCommand {
             return;
         }
 
-        if (!event.getGuildChannel().canTalk(event.getGuild().getSelfMember())) {
-            event.getHook().editOriginalEmbeds(EmbedMessage.error("I can't message you in this channel, please fix the permissions!")).queue();
-            return;
+        if (event.isFromGuild()) {
+            if (!event.getGuildChannel().canTalk(event.getGuild().getSelfMember())) {
+                event.getHook().editOriginalEmbeds(EmbedMessage.error("I can't message you in this channel, please fix the permissions!")).queue();
+                return;
+            }
         }
 
         var reminder = new Reminder(

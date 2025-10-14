@@ -54,9 +54,10 @@ public class CommandManager extends ListenerAdapter {
      */
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (!event.isFromGuild()) return;
+        String guildName = "DMs";
+        if (event.isFromGuild()) guildName = event.getGuild().getName();
 
-        logger.info("Received command {} from {} in {}", event.getCommandString(), event.getUser().getName(), event.getGuild().getName());
+        logger.info("Received command {} from {} in {}", event.getCommandString(), event.getUser().getName(), guildName);
 
         commands.stream()
                 .filter(command -> command.name().equals(event.getName()))
