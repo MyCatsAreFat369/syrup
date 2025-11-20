@@ -3,6 +3,7 @@ package org.maplestar.syrup.commands;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -36,7 +37,7 @@ public class DownloadCommand extends AbstractCommand {
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "Download this server's data!")
-                .setGuildOnly(true)
+                .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                 .addSubcommands(
                         new SubcommandData("leaderboard", "Download this server's leaderboard as a CSV file!")

@@ -1,6 +1,7 @@
 package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -39,7 +40,7 @@ public class LeaderboardCommand extends AbstractCommand {
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "View the leaderboard!")
-                .setGuildOnly(true)
+                .setContexts(InteractionContextType.GUILD)
                 .addOption(OptionType.INTEGER, "page", "The page", false);
     }
 

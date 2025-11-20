@@ -2,6 +2,7 @@ package org.maplestar.syrup.utils;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import org.maplestar.syrup.Main;
 import org.maplestar.syrup.data.rank.RankingData;
 
@@ -33,13 +34,12 @@ public class ImageUtils {
      * @return the image in its byte representation
      * @throws IOException if there's a problem fetching the images from Discord or encoding the newly created image
      */
-    public static byte[] generateRankImage(Member member, RankingData rankingData) throws IOException {
+    public static byte[] generateRankImage(Member member, User user, RankingData rankingData) throws IOException {
         // Load the avatar & banner from Discord
-        var profile = member.getUser().retrieveProfile().complete();
-        var avatarUrl = member.getEffectiveAvatarUrl();
+        var profile = user.retrieveProfile().complete();
         var bannerUrl = profile.getBannerUrl();
         var accentColor = profile.getAccentColor();
-        BufferedImage avatarImage = loadMemberAvatar(member, member.getIdLong());
+        BufferedImage avatarImage = loadMemberAvatar(member, user, user.getIdLong());
         BufferedImage bannerImage;
 
         // If there's no banner, use a cropped version of the avatar
@@ -92,8 +92,13 @@ public class ImageUtils {
 
         // Draw the username and fit it appropriately
         int textX = 50, textY = 880;
-        String name = member.getEffectiveName();
-        System.out.println((int) (image.getWidth() * 0.9));
+        String name;
+        if(member == null) {
+            name = user.getEffectiveName();
+        } else {
+            name = member.getEffectiveName();
+        }
+
         int nameInitialSize = 120;
         int nameSize = fitText(name, (int) (image.getWidth() * 0.9), notoSansFont, nameInitialSize, g2d);
         g2d.setFont(new Font(notoSansFont, Font.BOLD, nameSize));
@@ -188,10 +193,11 @@ public class ImageUtils {
 
         // You
         var memberYou = guild.retrieveMemberById(userRank.userID()).submit().join();
+        var userYou = memberYou.getUser();
         int youX = image.getWidth() / 2 - 375;
         int youY = 1140;
         g2d.drawImage(generateLeaderboardRankImage(userRank, "You", true), youX, youY, 750, 140, null);
-        g2d.drawImage(generateAvatar(loadMemberAvatar(memberYou, userRank.userID())), youX - 20, youY - 20, 160, 160, null);
+        g2d.drawImage(generateAvatar(loadMemberAvatar(memberYou, userYou, userRank.userID())), youX - 20, youY - 20, 160, 160, null);
         var youRankImage = generateRankNumberImage(userRank.rank());
         double scaleFactor = 0.6 - 0.3 * (("" + (userRank.rank())).length() / 5.0);
         g2d.drawImage(youRankImage,
@@ -214,6 +220,7 @@ public class ImageUtils {
             double setY = 290 + 160 * (i % 5);
 
             Member member = null;
+            User user = guild.getJDA().retrieveUserById(userID).complete();
             for (var m : members) {
                 if (m.getIdLong() == userID) {
                     member = m;
@@ -221,13 +228,15 @@ public class ImageUtils {
                 }
             }
 
-            String memberName = "Unknown User (" + rankedUsers.get(i).userID() + ")";
+            String memberName = "Unknown User (" + userID + ")";
             if (member != null) {
                 memberName = member.getEffectiveName();
+            } else if (user != null) {
+                memberName = user.getEffectiveName();
             }
 
-            g2d.drawImage(generateLeaderboardRankImage(rankedUsers.get(i), memberName, rankedUsers.get(i).userID() == userRank.userID()), (int) setX, (int) setY, 750, 140, null);
-            g2d.drawImage(generateAvatar(loadMemberAvatar(member, userID)), (int) setX - 10, (int) setY - 10, 160, 160, null);
+            g2d.drawImage(generateLeaderboardRankImage(rankedUsers.get(i), memberName, userID == userRank.userID()), (int) setX, (int) setY, 750, 140, null);
+            g2d.drawImage(generateAvatar(loadMemberAvatar(member, user, userID)), (int) setX - 10, (int) setY - 10, 160, 160, null);
         }
 
         for (int i = 0; i < rankedUsers.size(); i++) {
@@ -357,9 +366,18 @@ public class ImageUtils {
         return ImageIO.read(imageURL);
     }
 
-    private static BufferedImage loadMemberAvatar(Member member, long userID) throws IOException {
-        if (member == null) return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
-        var avatarUrl = member.getEffectiveAvatarUrl();
+    private static BufferedImage loadMemberAvatar(Member member, User user, long userID) throws IOException {
+        if (member == null && user == null) {
+            return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
+        }
+
+        String avatarUrl;
+        if (member == null) {
+            avatarUrl = user.getEffectiveAvatarUrl();
+        } else {
+            avatarUrl = member.getEffectiveAvatarUrl();
+        }
+
         return loadImageFromUrl(avatarUrl + "?size=256");
     }
 

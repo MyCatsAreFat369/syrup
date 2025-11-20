@@ -7,13 +7,13 @@ import java.util.regex.Pattern;
  * Utility class for dealing with {@link Duration}.
  */
 public class DurationUtils {
-    private static final Pattern durationPattern = Pattern.compile("(\\d+[smhdy])");
+    private static final Pattern durationPattern = Pattern.compile("(\\d+[smhdwy])");
 
     /**
      * Attempts to parse the provided String as a Duration.
      * <p>
-     * It is expected to consist of a number followed by either y for year, d for day,
-     * h for hour, m for minute or s for second.
+     * It is expected to consist of a number followed by either y for year, w for week,
+     * d for day, h for hour, m for minute or s for second.
      * Multiple ones may be chained together to express more complex durations.
      *
      * @param durationString the human-readable String representing the duration
@@ -33,6 +33,7 @@ public class DurationUtils {
                 case 'm' -> duration = duration.plusMinutes(amount);
                 case 'h' -> duration = duration.plusHours(amount);
                 case 'd' -> duration = duration.plusDays(amount);
+                case 'w' -> duration = duration.plusDays(7L * amount);
                 case 'y' -> duration = duration.plusDays(365L * amount);
                 default -> throw new IllegalArgumentException();
             }

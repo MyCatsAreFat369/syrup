@@ -53,6 +53,13 @@ public class ReminderDataManager {
         }
     }
 
+    /**
+     * Returns the reminder with the specified ID.
+     * Empty if the reminder doesn't exist or already expired.
+     *
+     * @param id the reminder ID
+     * @return the reminder, or empty if it doesn't exist
+     */
     public Optional<Reminder> getReminderByID(int id) {
         try(var connection = databaseManager.getConnection()) {
             try(var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE id = ?")) {
@@ -77,13 +84,20 @@ public class ReminderDataManager {
         }
     }
 
-    // not sortedset btw because i wanna sort by most recently made
+    /**
+     * Returns a list of reminders on the requested page ordered by their expiration date.
+     * The list will never be empty if the user has created a reminder.
+     *
+     * @param user the user
+     * @param page the page
+     * @return a list of up to five reminders
+     */
     public List<Reminder> getPaginatedRemindersOfUser(User user, int page) {
         if (page < 1) page = 1;
 
         List<Reminder> result = new ArrayList<>();
         try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? ORDER BY time LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
                 statement.setLong(1, user.getIdLong());
                 statement.setLong(2, page);
                 statement.setLong(3, user.getIdLong());

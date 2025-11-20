@@ -2,6 +2,7 @@ package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -36,7 +37,7 @@ public class RankCommand extends AbstractCommand {
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "View your rank")
-                .setGuildOnly(true)
+                .setContexts(InteractionContextType.GUILD)
                 .addOption(OptionType.USER, "user", "The user", false);
     }
 
@@ -58,32 +59,27 @@ public class RankCommand extends AbstractCommand {
         event.deferReply().queue();
 
         var member = event.getOption("user", event.getMember(), OptionMapping::getAsMember);
-        if (member == null) {
-            event.getHook().editOriginalEmbeds(EmbedMessage.error(
-                            """
-                            This user isn't a member of the guild anymore, or they have deleted their account!
-                            
-                            If you would still like to know their level and xp, please run `/download
-                            leaderboard` and find their User ID in the file in your favorite text editor
-                            or Excel! (Usually through Ctrl+F or F3)."""
-            )).queue();
-            return;
-        }
-
-        RankingData rankingData;
-        rankingData = levelDataManager.getRankingData(member.getUser(), event.getGuild());
+        var user = event.getOption("user", event.getMember().getUser(), OptionMapping::getAsUser);
+        var rankingData = levelDataManager.getRankingData(user, event.getGuild());
 
         try {
-            var imageBytes = ImageUtils.generateRankImage(member, rankingData);
-            event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
+            var imageBytes = ImageUtils.generateRankImage(member, user, rankingData);
+            event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, user.getName() + ".png")).queue();
         } catch (Exception exception) {
             logger.error("Couldn't attach rank file", exception);
+            String username;
+            if (member == null) {
+                username = user.getEffectiveName();
+            } else {
+                username = member.getEffectiveName();
+            }
+
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
                     """
                     *Something went wrong while generating your rank image, but here you go:*
                     
                     **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP is required to level up.""".formatted(
-                            member.getEffectiveName(),
+                            username,
                             rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank(),
                             rankingData.levelData().level(),
                             rankingData.levelData().xp(),
