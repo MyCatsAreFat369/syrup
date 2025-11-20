@@ -3,6 +3,7 @@ package org.maplestar.syrup.commands;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -46,7 +47,7 @@ public class UploadCommand extends AbstractCommand
     @Override
     public SlashCommandData getSlashCommandData() {
         return Commands.slash(name, "Upload previous leaderboard data to this server!")
-                .setGuildOnly(true)
+                .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
                 .addSubcommands(
                         new SubcommandData("leaderboard", "Download this server's leaderboard as a CSV file!")
