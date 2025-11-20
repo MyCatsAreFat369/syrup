@@ -90,6 +90,7 @@ public class Main {
         var commandManager = new CommandManager();
         commandManager.registerCommand(new EditRankCommand(levelDataManager, levelChangeListener));
         commandManager.registerCommand(new DownloadCommand(levelDataManager));
+        commandManager.registerCommand(new UploadCommand(levelDataManager));
         commandManager.registerCommand(new LeaderboardCommand(levelDataManager));
         commandManager.registerCommand(new LevelRoleCommand(levelRoleDataManager, guildSettingsManager));
         commandManager.registerCommand(new RankCommand(levelDataManager));
