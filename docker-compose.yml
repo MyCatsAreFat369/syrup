@@ -10,7 +10,6 @@ services:
       - "./.env:/app/.env"
       - "./logs/:/app/logs/"
       - "./migration/:/app/migration/"
-      - "./temp/:/app/temp/"
 
   db:
     image: postgres:17.2
