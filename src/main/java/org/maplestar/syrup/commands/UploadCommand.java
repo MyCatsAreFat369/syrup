@@ -96,35 +96,38 @@ public class UploadCommand extends AbstractCommand
             return;
         }
 
+        String mainPath = Path.of("temp").toAbsolutePath().toString();
+        attachment.getProxy().downloadToFile(new File(mainPath + "/" + attachment.getFileName()))
+                .thenAccept(file ->
+                {
+                    var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(file);
+                    while(!rankingDataList.isEmpty())
+                    {
+                        var rankingData = rankingDataList.removeFirst();
+                        var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
+                        if(user == null) continue;
+                        if(rankingData.levelData().xp() == 0) continue;
+                        levelDataManager.setLevelData(user, event.getGuild(), rankingData.levelData());
+                    }
+                    logger.info("Saved file to path {}", file.getAbsolutePath());
+                    event.getChannel().sendMessageEmbeds(EmbedMessage.normal("Uploaded the data!"))
+                            .queue();
+                });
 
+        event.getHook().editOriginalEmbeds(EmbedMessage.normal("Gotcha! I'll upload this data into the server, just give me a moment!"))
+                .queue();
+
+        /*
         try
         {
-            URI uri = ClassLoader.getSystemResource("temp").toURI();
-            String mainPath = Paths.get(uri).toString();
-            attachment.getProxy().downloadToFile(new File(mainPath + "/" + attachment.getFileName()))
-                    .thenAccept(file ->
-                    {
-                        var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(file);
-                        while(!rankingDataList.isEmpty())
-                        {
-                            var rankingData = rankingDataList.removeFirst();
-                            var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
-                            if(user == null) continue;
-                            if(rankingData.levelData().xp() == 0) continue;
-                            levelDataManager.setLevelData(user, event.getGuild(), rankingData.levelData());
-                        }
-                        logger.info("Saved file to path {}", file.getAbsolutePath());
-                        event.getChannel().sendMessageEmbeds(EmbedMessage.normal("Uploaded the data!"))
-                                .queue();
-                    });
 
-            event.getHook().editOriginalEmbeds(EmbedMessage.normal("Gotcha! I'll upload this data into the server, just give me a moment!"))
-                    .queue();
         } catch(URISyntaxException exception)
         {
             logger.error("Couldn't upload file", exception);
             event.getHook().editOriginalEmbeds(EmbedMessage.error("Sorry, I came across an issue."))
                     .queue();
         }
+
+         */
     }
 }
