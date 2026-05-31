@@ -1,3 +1,5 @@
+/*
+
 package org.maplestar.syrup.commands;
 
 import net.dv8tion.jda.api.Permission;
@@ -81,3 +83,6 @@ public class LogSettingsCommand extends AbstractCommand {
         // TODO: implement
     }
 }
+
+
+ */

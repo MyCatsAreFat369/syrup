@@ -6,11 +6,11 @@ package org.maplestar.syrup.data.settings;
  * @param removeOldRoles whether level roles should be removed when a user acquires a higher one
  * @param addOnRejoin whether level roles should be added back when a user re-joins the server
  */
-public record GuildSettings(boolean removeOldRoles, boolean addOnRejoin, long channelID) {
+public record GuildSettings(boolean removeOldRoles, boolean addOnRejoin) {
     /**
      * The default guild settings to be used for new guilds and in case of database failure.
      */
-    public static final GuildSettings DEFAULT = new GuildSettings(true, true, -1);
+    public static final GuildSettings DEFAULT = new GuildSettings(true, true);
 
     /**
      * Updates whether level roles should be removed when a user acquires a higher one.
@@ -19,7 +19,7 @@ public record GuildSettings(boolean removeOldRoles, boolean addOnRejoin, long ch
      * @return the updated guild settings
      */
     public GuildSettings setRemoveOldRoles(boolean value) {
-        return new GuildSettings(value, this.addOnRejoin, this.channelID);
+        return new GuildSettings(value, this.addOnRejoin);
     }
 
     /**
@@ -29,10 +29,6 @@ public record GuildSettings(boolean removeOldRoles, boolean addOnRejoin, long ch
      * @return whether level roles should be added back when a user re-joins the server
      */
     public GuildSettings setAddOnRejoin(boolean value) {
-        return new GuildSettings(this.removeOldRoles, value, this.channelID);
-    }
-
-    public GuildSettings setLogChannel(long value) {
-        return new GuildSettings(this.removeOldRoles, this.addOnRejoin, value);
+        return new GuildSettings(this.removeOldRoles, value);
     }
 }
