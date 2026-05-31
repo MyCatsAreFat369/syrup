@@ -117,6 +117,7 @@ public class UploadCommand extends AbstractCommand
         event.getHook().editOriginalEmbeds(EmbedMessage.normal("Gotcha! I'll upload this data into the server, just give me a moment!"))
                 .queue();
 
+        // commit
         /*
         try
         {
