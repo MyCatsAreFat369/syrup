@@ -96,9 +96,11 @@ public class UploadCommand extends AbstractCommand
             return;
         }
 
-
         try
         {
+            URI testuri = ClassLoader.getSystemResource("images").toURI();
+            logger.info("Test URI is {}", testuri.getPath());
+            logger.info("Current working directory is {}", System.getProperty("user.dir"));
             URI uri = ClassLoader.getSystemResource("temp").toURI();
             String mainPath = Paths.get(uri).toString();
             attachment.getProxy().downloadToFile(new File(mainPath + "/" + attachment.getFileName()))
