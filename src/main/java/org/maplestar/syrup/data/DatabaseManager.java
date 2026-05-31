@@ -11,7 +11,8 @@ import java.sql.SQLException;
 /**
  * Initializes, sets up and provides access to a postgres database.
  */
-public class DatabaseManager {
+public class DatabaseManager
+{
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private HikariDataSource dataSource;
 
@@ -20,7 +21,8 @@ public class DatabaseManager {
      *
      * @param config the config
      */
-    public DatabaseManager(Config config) {
+    public DatabaseManager(Config config)
+    {
         initializeConnectionPool(config);
         initializeTables();
     }
@@ -30,7 +32,8 @@ public class DatabaseManager {
      *
      * @param config the config
      */
-    private void initializeConnectionPool(Config config) {
+    private void initializeConnectionPool(Config config)
+    {
         dataSource = new HikariDataSource();
         dataSource.setDataSourceClassName("com.impossibl.postgres.jdbc.PGDataSource");
         dataSource.setUsername(config.databaseUsername());
@@ -39,9 +42,11 @@ public class DatabaseManager {
         dataSource.addDataSourceProperty("databaseName", config.databaseName());
         dataSource.setMinimumIdle(3);
         dataSource.setAutoCommit(true);
-        try {
+        try
+        {
             dataSource.getConnection();
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Could not initialize connection", exception);
             System.exit(1);
         }
@@ -50,8 +55,10 @@ public class DatabaseManager {
     /**
      * Creates the tables in the postgres database, if necessary. Shuts down the bot on failure.
      */
-    private void initializeTables() {
-        try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
+    private void initializeTables()
+    {
+        try (var connection = dataSource.getConnection(); var statement = connection.createStatement())
+        {
             statement.execute("CREATE TABLE IF NOT EXISTS Ranks (guild_id BIGINT, user_id BIGINT, level INTEGER, xp BIGINT, PRIMARY KEY (guild_id, user_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS BlockedChannels (guild_id BIGINT, channel_id BIGINT, PRIMARY KEY (guild_id, channel_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS BlockedUsers (guild_id BIGINT, user_id BIGINT, time TIMESTAMP, PRIMARY KEY (guild_id, user_id))");
@@ -59,7 +66,8 @@ public class DatabaseManager {
             statement.execute("CREATE TABLE IF NOT EXISTS LevelRoles (guild_id BIGINT, role_id BIGINT, level INTEGER, PRIMARY KEY (guild_id, role_id))");
             statement.execute("CREATE TABLE IF NOT EXISTS Reminders (id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY, user_id BIGINT, time TIMESTAMP, message TEXT, channel_id BIGINT)");
             statement.execute("CREATE TABLE IF NOT EXISTS LogSettings (guild_id BIGINT PRIMARY KEY, log_leaderboard_backups BOOLEAN, log_levelrole_added BOOLEAN, log_levelrole_removed BOOLEAN)");
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Could not create tables", exception);
             System.exit(1);
         }
@@ -71,15 +79,18 @@ public class DatabaseManager {
      * @return a database connection
      * @throws SQLException if there's a problem communicating with the database
      */
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException
+    {
         return dataSource.getConnection();
     }
 
     /**
      * Closes the database connection. Should only be invoked when the bot shuts down.
      */
-    public void closeDataSource() {
-        if (!dataSource.isClosed()) {
+    public void closeDataSource()
+    {
+        if (!dataSource.isClosed())
+        {
             logger.info("Database connection shutdown!");
             dataSource.close();
         }

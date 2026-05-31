@@ -9,11 +9,13 @@ import java.util.Map;
  *
  * @param <T> the type that should be put on cooldown
  */
-public class CooldownProvider<T> {
+public class CooldownProvider<T>
+{
     private final Map<T, Duration> cooldownTimes = new HashMap<>();
     private final Duration duration;
 
-    private CooldownProvider(Duration duration) {
+    private CooldownProvider(Duration duration)
+    {
         this.duration = duration;
     }
 
@@ -24,7 +26,8 @@ public class CooldownProvider<T> {
      * @param t the object to check
      * @return true if this object is still on cooldown
      */
-    public boolean isOnCooldown(T t) {
+    public boolean isOnCooldown(T t)
+    {
         if (!cooldownTimes.containsKey(t)) return false;
 
         return cooldownTimes.get(t).toMillis() > System.currentTimeMillis();
@@ -35,7 +38,8 @@ public class CooldownProvider<T> {
      *
      * @param t the object
      */
-    public void applyCooldown(T t) {
+    public void applyCooldown(T t)
+    {
         cooldownTimes.put(t, duration.plusMillis(System.currentTimeMillis()));
     }
 
@@ -43,10 +47,11 @@ public class CooldownProvider<T> {
      * Returns a new instance with the provided {@link Duration}.
      *
      * @param duration the cooldown length
+     * @param <T>      the type of {@link CooldownProvider}
      * @return a new instance
-     * @param <T> the type of {@link CooldownProvider}
      */
-    public static <T> CooldownProvider<T> withDuration(Duration duration) {
+    public static <T> CooldownProvider<T> withDuration(Duration duration)
+    {
         return new CooldownProvider<>(duration);
     }
 }

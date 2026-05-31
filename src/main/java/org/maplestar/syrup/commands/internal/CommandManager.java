@@ -13,14 +13,16 @@ import java.util.HashSet;
 /**
  * Stores and handles commands to be run via Discord.
  */
-public class CommandManager extends ListenerAdapter {
+public class CommandManager extends ListenerAdapter
+{
     private final Logger logger = LoggerFactory.getLogger(CommandManager.class);
     private final HashSet<AbstractCommand> commands;
 
     /**
      * Initializes the command manager.
      */
-    public CommandManager() {
+    public CommandManager()
+    {
         this.commands = new HashSet<>();
     }
 
@@ -29,7 +31,8 @@ public class CommandManager extends ListenerAdapter {
      *
      * @param command the command to be registered
      */
-    public void registerCommand(AbstractCommand command) {
+    public void registerCommand(AbstractCommand command)
+    {
         this.commands.add(command);
         logger.info("Registered command /{}", command.name());
     }
@@ -40,7 +43,8 @@ public class CommandManager extends ListenerAdapter {
      *
      * @return a collection of all command's data
      */
-    public Collection<SlashCommandData> getCommandData() {
+    public Collection<SlashCommandData> getCommandData()
+    {
         return commands.stream()
                 .map(AbstractCommand::getSlashCommandData)
                 .toList();
@@ -53,7 +57,8 @@ public class CommandManager extends ListenerAdapter {
      * @param event a {@link SlashCommandInteractionEvent} representing the command
      */
     @Override
-    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event)
+    {
         String guildName = "DMs";
         if (event.isFromGuild()) guildName = event.getGuild().getName();
 

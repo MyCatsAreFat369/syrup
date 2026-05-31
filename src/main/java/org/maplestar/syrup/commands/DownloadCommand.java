@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The /download command for downloading guild data.
  */
-public class DownloadCommand extends AbstractCommand {
+public class DownloadCommand extends AbstractCommand
+{
     private final Logger logger = LoggerFactory.getLogger(DownloadCommand.class);
     private final LevelDataManager levelDataManager;
 
@@ -28,14 +29,16 @@ public class DownloadCommand extends AbstractCommand {
      *
      * @param levelDataManager the level data manager
      */
-    public DownloadCommand(LevelDataManager levelDataManager) {
+    public DownloadCommand(LevelDataManager levelDataManager)
+    {
         super("download");
 
         this.levelDataManager = levelDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Download this server's data!")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -45,35 +48,42 @@ public class DownloadCommand extends AbstractCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply().queue();
 
         var guild = event.getGuild();
         if (guild == null) return;
         if (event.getSubcommandName() == null) return;
 
-        switch (event.getSubcommandName()) {
+        switch (event.getSubcommandName())
+        {
             case "leaderboard" -> leaderboard(event, guild);
         }
     }
 
     /**
      * The /download leaderboard subcommand. Allows the download of all level data as a CSV file.
+     *
      * @param event the command event
      * @param guild the guild the command was ran in
      */
-    public void leaderboard(SlashCommandInteractionEvent event, Guild guild) {
+    public void leaderboard(SlashCommandInteractionEvent event, Guild guild)
+    {
         var data = levelDataManager.getEntireLeaderboard(guild);
         var csvData = LeaderboardDataToCSVUtils.createCSVFileFromData(data);
-        if (csvData.length == 0) {
+        if (csvData.length == 0)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("There is no data for this guild")).queue();
             return;
         }
 
-        try {
+        try
+        {
             event.getHook().editOriginalAttachments(AttachedFile.fromData(csvData, "leaderboardData.txt"))
                     .queue();
-        } catch (Exception exception) {
+        } catch (Exception exception)
+        {
             logger.error("Couldn't attach leaderboard data file", exception);
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
                     """

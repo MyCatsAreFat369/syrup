@@ -17,7 +17,8 @@ import org.maplestar.syrup.utils.EmbedMessage;
 /**
  * The /xp-channel command for excluding channels from the rank system.
  */
-public class XPBlockChannelCommand extends AbstractCommand {
+public class XPBlockChannelCommand extends AbstractCommand
+{
     private final BlockDataManager blockDataManager;
 
     /**
@@ -25,14 +26,16 @@ public class XPBlockChannelCommand extends AbstractCommand {
      *
      * @param blockDataManager the block data manager
      */
-    public XPBlockChannelCommand(BlockDataManager blockDataManager) {
+    public XPBlockChannelCommand(BlockDataManager blockDataManager)
+    {
         super("xp-channel");
 
         this.blockDataManager = blockDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Deals with XP gain in channels")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -47,10 +50,12 @@ public class XPBlockChannelCommand extends AbstractCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply(true).queue();
 
-        switch(event.getSubcommandName()) {
+        switch (event.getSubcommandName())
+        {
             case "list" -> list(event);
             case "block" -> block(event);
             case "unblock" -> unblock(event);
@@ -66,7 +71,8 @@ public class XPBlockChannelCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void list(SlashCommandInteractionEvent event) {
+    private void list(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
 
         var embedBuilder = new EmbedBuilder()
@@ -75,7 +81,8 @@ public class XPBlockChannelCommand extends AbstractCommand {
 
         var blockedChannels = blockDataManager.getBlockedChannelIds(guild);
 
-        for (int i = 0; i < blockedChannels.size(); i++) {
+        for (int i = 0; i < blockedChannels.size(); i++)
+        {
             var channelID = blockedChannels.get(i);
             embedBuilder.addField("Channel " + (i + 1), "<#" + channelID + ">", true);
         }
@@ -90,28 +97,32 @@ public class XPBlockChannelCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void block(SlashCommandInteractionEvent event) {
+    private void block(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var channel = event.getOption("channel").getAsChannel();
 
         boolean isBlocked = blockDataManager.isBlocked(channel, guild);
-        if (isBlocked) {
+        if (isBlocked)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is already in the blocklist!")).queue();
             return;
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, true);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This channel had been **added** to the xp-blocklist!
-                
-                Users will no longer gain xp by chatting here."""))
+                            This channel had been **added** to the xp-blocklist!
+                            
+                            Users will no longer gain xp by chatting here."""))
                     .queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to toggle xp-block in this channel.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to toggle xp-block in this channel.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -123,29 +134,33 @@ public class XPBlockChannelCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void unblock(SlashCommandInteractionEvent event) {
+    private void unblock(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var channel = event.getOption("channel").getAsChannel();
 
         boolean isBlocked = blockDataManager.isBlocked(channel, guild);
-        if (!isBlocked) {
+        if (!isBlocked)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is not in the blocklist!")).queue();
             return;
         }
 
         boolean success = blockDataManager.setBlocked(channel.getIdLong(), guild, false);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This channel has been **removed** from the xp-blocklist!\s
-                
-                Users will now gain xp by chatting here."""))
+                            This channel has been **removed** from the xp-blocklist!\s
+                            
+                            Users will now gain xp by chatting here."""))
                     .queue();
 
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to toggle xp-block in this channel.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to toggle xp-block in this channel.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -157,7 +172,8 @@ public class XPBlockChannelCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void cleanup(SlashCommandInteractionEvent event) {
+    private void cleanup(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var guildChannels = guild.getChannels().stream()
                 .map(GuildChannel::getIdLong)

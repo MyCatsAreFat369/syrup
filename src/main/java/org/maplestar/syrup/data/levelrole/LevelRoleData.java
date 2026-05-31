@@ -6,7 +6,8 @@ package org.maplestar.syrup.data.levelrole;
  * The role may no longer exist on the Discord guild.
  *
  * @param roleID the Discord role's ID
- * @param level the level associated with the role
+ * @param level  the level associated with the role
  */
-public record LevelRoleData(long roleID, int level) {
+public record LevelRoleData(long roleID, int level)
+{
 }

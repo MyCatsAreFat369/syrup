@@ -12,7 +12,8 @@ import java.util.*;
 /**
  * Provides access to the reminders of each user.
  */
-public class ReminderDataManager {
+public class ReminderDataManager
+{
     private final Logger logger = LoggerFactory.getLogger(ReminderDataManager.class);
     private final DatabaseManager databaseManager;
     private final SortedSet<Reminder> reminderCache = new TreeSet<>();
@@ -22,7 +23,8 @@ public class ReminderDataManager {
      *
      * @param databaseManager the database manager
      */
-    public ReminderDataManager(DatabaseManager databaseManager) {
+    public ReminderDataManager(DatabaseManager databaseManager)
+    {
         this.databaseManager = databaseManager;
 
         loadReminders();
@@ -31,12 +33,16 @@ public class ReminderDataManager {
     /**
      * Loads all active reminders from the database into memory.
      */
-    private void loadReminders() {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM Reminders")) {
+    private void loadReminders()
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders"))
+            {
                 var resultSet = statement.executeQuery();
 
-                while (resultSet.next()) {
+                while (resultSet.next())
+                {
                     var reminder = new Reminder(
                             resultSet.getInt("id"),
                             resultSet.getLong("user_id"),
@@ -48,7 +54,8 @@ public class ReminderDataManager {
                     reminderCache.add(reminder);
                 }
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Failed to load reminders", exception);
         }
     }
@@ -60,9 +67,12 @@ public class ReminderDataManager {
      * @param id the reminder ID
      * @return the reminder, or empty if it doesn't exist
      */
-    public Optional<Reminder> getReminderByID(int id) {
-        try(var connection = databaseManager.getConnection()) {
-            try(var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE id = ?")) {
+    public Optional<Reminder> getReminderByID(int id)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE id = ?"))
+            {
                 statement.setInt(1, id);
 
                 var resultSet = statement.executeQuery();
@@ -78,7 +88,8 @@ public class ReminderDataManager {
 
                 return Optional.of(reminder);
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't fetch reminder with id {}", id, exception);
             return Optional.empty();
         }
@@ -92,18 +103,22 @@ public class ReminderDataManager {
      * @param page the page
      * @return a list of up to five reminders
      */
-    public List<Reminder> getPaginatedRemindersOfUser(User user, int page) {
+    public List<Reminder> getPaginatedRemindersOfUser(User user, int page)
+    {
         if (page < 1) page = 1;
 
         List<Reminder> result = new ArrayList<>();
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? ORDER BY time LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? ORDER BY time LIMIT 5 OFFSET least((? - 1) * 5, greatest(0, ceil((SELECT count(*) FROM Reminders WHERE user_id = ?) / 5) * 5))"))
+            {
                 statement.setLong(1, user.getIdLong());
                 statement.setLong(2, page);
                 statement.setLong(3, user.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                while (resultSet.next()) {
+                while (resultSet.next())
+                {
                     Reminder reminder = new Reminder(
                             resultSet.getInt("id"),
                             resultSet.getLong("user_id"),
@@ -116,7 +131,8 @@ public class ReminderDataManager {
 
                 return result;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't get recent reminders of user {} at page {}", user.getName(), page, exception);
             return List.of();
         }
@@ -128,16 +144,20 @@ public class ReminderDataManager {
      * @param user the user
      * @return the number of reminders, or 0 if there are none
      */
-    public int getUserReminderCount(User user) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT COUNT(*) AS count FROM Reminders WHERE user_id = ?")) {
+    public int getUserReminderCount(User user)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT COUNT(*) AS count FROM Reminders WHERE user_id = ?"))
+            {
                 statement.setLong(1, user.getIdLong());
 
                 var resultSet = statement.executeQuery();
                 resultSet.next();
                 return resultSet.getInt("count");
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't check user reminder count", exception);
             return 0;
         }
@@ -150,7 +170,8 @@ public class ReminderDataManager {
      *
      * @return a sorted list of reminders
      */
-    public SortedSet<Reminder> getSortedReminders() {
+    public SortedSet<Reminder> getSortedReminders()
+    {
         return reminderCache;
     }
 
@@ -160,9 +181,12 @@ public class ReminderDataManager {
      * @param reminder the reminder
      * @return false on database failure, otherwise true
      */
-    public boolean addReminder(Reminder reminder) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO Reminders (user_id, time, message, channel_id) VALUES (?, ?, ?, ?) RETURNING id")) {
+    public boolean addReminder(Reminder reminder)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("INSERT INTO Reminders (user_id, time, message, channel_id) VALUES (?, ?, ?, ?) RETURNING id"))
+            {
                 statement.setLong(1, reminder.userID());
                 statement.setTimestamp(2, new Timestamp(reminder.timeInMillis()));
                 statement.setString(3, reminder.message());
@@ -173,7 +197,8 @@ public class ReminderDataManager {
 
                 return reminderCache.add(reminder.withID(resultSet.getInt("id")));
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't add reminder {} to database", reminder, exception);
             return false;
         }
@@ -186,15 +211,19 @@ public class ReminderDataManager {
      * @param reminder the reminder to delete
      * @return false on database failure, otherwise true
      */
-    public boolean deleteReminder(Reminder reminder) {
+    public boolean deleteReminder(Reminder reminder)
+    {
         reminderCache.remove(reminder);
 
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("DELETE FROM Reminders WHERE id = ?")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("DELETE FROM Reminders WHERE id = ?"))
+            {
                 statement.setInt(1, reminder.id());
                 statement.executeUpdate();
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't delete reminder {}", reminder, exception);
             return false;
         }
@@ -210,16 +239,20 @@ public class ReminderDataManager {
      * @param user the user
      * @return false on database failure, otherwise true
      */
-    public boolean nukeReminders(User user) {
+    public boolean nukeReminders(User user)
+    {
         reminderCache.removeIf(reminder -> reminder.userID() == user.getIdLong());
 
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("DELETE FROM Reminders WHERE user_id = ?")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("DELETE FROM Reminders WHERE user_id = ?"))
+            {
                 statement.setLong(1, user.getIdLong());
                 statement.execute();
                 return true;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't delete reminders for user {}", user.getName(), exception);
             return false;
         }

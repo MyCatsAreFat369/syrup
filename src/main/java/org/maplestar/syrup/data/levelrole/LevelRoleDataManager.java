@@ -14,7 +14,8 @@ import java.util.Optional;
 /**
  * Provides access to the level roles for each individual Discord guild, which can be obtained by increasing your level.
  */
-public class LevelRoleDataManager {
+public class LevelRoleDataManager
+{
     private final Logger logger = LoggerFactory.getLogger(LevelRoleDataManager.class);
     private final DatabaseManager databaseManager;
 
@@ -23,7 +24,8 @@ public class LevelRoleDataManager {
      *
      * @param databaseManager the database manager for database access
      */
-    public LevelRoleDataManager(DatabaseManager databaseManager) {
+    public LevelRoleDataManager(DatabaseManager databaseManager)
+    {
         this.databaseManager = databaseManager;
     }
 
@@ -35,19 +37,24 @@ public class LevelRoleDataManager {
      * @param guild the guild
      * @return a list of all level roles. May be empty or immutable
      */
-    public List<LevelRoleData> getLevelRoles(Guild guild) {
+    public List<LevelRoleData> getLevelRoles(Guild guild)
+    {
         List<LevelRoleData> levelRoles = new ArrayList<>();
 
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT role_id, level FROM LevelRoles WHERE guild_id = ?")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT role_id, level FROM LevelRoles WHERE guild_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                while (resultSet.next()) {
+                while (resultSet.next())
+                {
                     levelRoles.add(new LevelRoleData(resultSet.getLong("role_id"), resultSet.getInt("level")));
                 }
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Failed to access level roles for guild {}", guild.getName(), exception);
             return List.of();
         }
@@ -58,24 +65,30 @@ public class LevelRoleDataManager {
     /**
      * Retrieves the level role configuration for the Discord role on the provided guild.
      *
-     * @param role the Discord role representing the level role
+     * @param role  the Discord role representing the level role
      * @param guild the guild
      * @return an empty {@link Optional} if the role is not a level role or on database failure, otherwise containing the LevelRoleData
      */
-    public Optional<LevelRoleData> getLevelRoleData(Role role, Guild guild) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT level FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
+    public Optional<LevelRoleData> getLevelRoleData(Role role, Guild guild)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT level FROM LevelRoles WHERE guild_id = ? AND role_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, role.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                if (resultSet.next()) {
+                if (resultSet.next())
+                {
                     return Optional.of(new LevelRoleData(role.getIdLong(), resultSet.getInt("level")));
-                } else {
+                } else
+                {
                     return Optional.empty();
                 }
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Failed to check level for role {} in guild {}", role.getId(), guild.getName(), exception);
             return Optional.empty();
         }
@@ -84,20 +97,24 @@ public class LevelRoleDataManager {
     /**
      * Registers a level role to be obtained at the specified level on the guild.
      *
-     * @param guild the guild
+     * @param guild     the guild
      * @param levelRole the Discord role representing the level role
-     * @param level the level
+     * @param level     the level
      * @return false if the update was unsuccessful or on database failure, otherwise true
      */
-    public boolean addLevelRole(Guild guild, Role levelRole, int level) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO LevelRoles (guild_id, role_id, level) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")) {
+    public boolean addLevelRole(Guild guild, Role levelRole, int level)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("INSERT INTO LevelRoles (guild_id, role_id, level) VALUES (?, ?, ?) ON CONFLICT DO NOTHING"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, levelRole.getIdLong());
                 statement.setInt(3, level);
                 return statement.executeUpdate() == 1;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Failed to add level role for guild {}", guild.getName(), exception);
             return false;
         }
@@ -106,18 +123,22 @@ public class LevelRoleDataManager {
     /**
      * Removes a level role from the database so it can no longer be obtained.
      *
-     * @param guild the guild
+     * @param guild       the guild
      * @param levelRoleID the ID of the Discord role representing this level role
      * @return false if the update was unsuccessful or on database failure, otherwise true
      */
-    public boolean removeLevelRole(Guild guild, long levelRoleID) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("DELETE FROM LevelRoles WHERE guild_id = ? AND role_id = ?")) {
+    public boolean removeLevelRole(Guild guild, long levelRoleID)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("DELETE FROM LevelRoles WHERE guild_id = ? AND role_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, levelRoleID);
                 return statement.executeUpdate() == 1;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Failed to remove level role for guild {}", guild.getName(), exception);
             return false;
         }

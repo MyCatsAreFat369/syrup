@@ -41,14 +41,16 @@ public class UploadCommand extends AbstractCommand
      *
      * @param levelDataManager the level data manager
      */
-    public UploadCommand(LevelDataManager levelDataManager) {
+    public UploadCommand(LevelDataManager levelDataManager)
+    {
         super("upload");
 
         this.levelDataManager = levelDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Upload previous leaderboard data to this server!")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -67,32 +69,34 @@ public class UploadCommand extends AbstractCommand
         if (guild == null) return;
         if (event.getSubcommandName() == null) return;
 
-        switch (event.getSubcommandName()) {
+        switch (event.getSubcommandName())
+        {
             case "leaderboard" -> leaderboard(event, guild);
         }
     }
 
     /**
      * The /download leaderboard subcommand. Allows the download of all level data as a CSV file.
+     *
      * @param event the command event
      * @param guild the guild the command was ran in
      */
     public void leaderboard(SlashCommandInteractionEvent event, Guild guild)
     {
         var attachment = event.getOption("file", null, OptionMapping::getAsAttachment);
-        if(attachment == null)
+        if (attachment == null)
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("The file you provided was null for some reason..."))
                     .queue();
             return;
         }
-        if(attachment.getFileExtension() == null)
+        if (attachment.getFileExtension() == null)
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("The file you provided has no file extension!"))
                     .queue();
             return;
         }
-        if(!attachment.getFileExtension().equals("txt"))
+        if (!attachment.getFileExtension().equals("txt"))
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("This file isn't a text file!"))
                     .queue();
@@ -105,12 +109,12 @@ public class UploadCommand extends AbstractCommand
                 {
                     var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(file);
                     List<LevelData> levelData = new ArrayList<>();
-                    while(!rankingDataList.isEmpty())
+                    while (!rankingDataList.isEmpty())
                     {
                         var rankingData = rankingDataList.removeFirst();
                         //var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
                         //if(user == null) continue;
-                        if(rankingData.levelData().xp() == 0) continue;
+                        if (rankingData.levelData().xp() == 0) continue;
                         levelDataManager.setLevelData(guild, rankingData.userID(), rankingData.levelData());
                     }
                     logger.info("Saved file to path {}", file.getAbsolutePath());
@@ -120,19 +124,5 @@ public class UploadCommand extends AbstractCommand
 
         event.getHook().editOriginalEmbeds(EmbedMessage.normal("Gotcha! I'll upload this data into the server, just give me a moment!"))
                 .queue();
-
-        // commit
-        /*
-        try
-        {
-
-        } catch(URISyntaxException exception)
-        {
-            logger.error("Couldn't upload file", exception);
-            event.getHook().editOriginalEmbeds(EmbedMessage.error("Sorry, I came across an issue."))
-                    .queue();
-        }
-
-         */
     }
 }

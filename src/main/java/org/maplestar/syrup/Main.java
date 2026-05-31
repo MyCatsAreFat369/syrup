@@ -27,7 +27,8 @@ import java.io.IOException;
 /**
  * The entry point of the app.
  */
-public class Main {
+public class Main
+{
     private final static Logger logger = LoggerFactory.getLogger(Main.class);
     private static LevelDataManager levelDataManager;
     private static BlockDataManager blockDataManager;
@@ -42,7 +43,8 @@ public class Main {
      *
      * @param args the arguments (assumed to be empty)
      */
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         loadFonts();
 
         var config = Config.load();
@@ -86,7 +88,8 @@ public class Main {
      *
      * @return the configured command manager
      */
-    private static CommandManager registerCommands() {
+    private static CommandManager registerCommands()
+    {
         var commandManager = new CommandManager();
         commandManager.registerCommand(new EditRankCommand(levelDataManager, levelChangeListener));
         commandManager.registerCommand(new DownloadCommand(levelDataManager));
@@ -104,7 +107,8 @@ public class Main {
     /**
      * Loads the fonts required to draw this bot's images from the application's resources.
      */
-    private static void loadFonts() {
+    private static void loadFonts()
+    {
         loadFont("/fonts/KiwiMaru-Regular.ttf");
     }
 
@@ -113,16 +117,19 @@ public class Main {
      *
      * @param path the path to the font
      */
-    private static void loadFont(String path) {
+    private static void loadFont(String path)
+    {
         GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        try {
+        try
+        {
             var url = Main.class.getResource(path);
             var inputStream = url.openStream();
             var font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
             graphicsEnvironment.registerFont(font);
             logger.info("Registered font {}", font.getFontName()); // yay
-        } catch (FontFormatException | IOException | NullPointerException exception) {
+        } catch (FontFormatException | IOException | NullPointerException exception)
+        {
             logger.warn("Oops, font " + path + " could not be registered", exception);
         }
     }

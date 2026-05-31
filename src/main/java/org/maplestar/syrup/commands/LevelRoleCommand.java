@@ -24,7 +24,8 @@ import java.util.List;
 /**
  * The /levelrole command for managing levelroles.
  */
-public class LevelRoleCommand extends AbstractCommand {
+public class LevelRoleCommand extends AbstractCommand
+{
     private final LevelRoleDataManager levelRoleDataManager;
     private final GuildSettingsManager guildSettingsManager;
 
@@ -34,7 +35,8 @@ public class LevelRoleCommand extends AbstractCommand {
      * @param levelRoleDataManager the level role data manager
      * @param guildSettingsManager the guild settings manager
      */
-    public LevelRoleCommand(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager) {
+    public LevelRoleCommand(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager)
+    {
         super("levelrole");
 
         this.levelRoleDataManager = levelRoleDataManager;
@@ -42,7 +44,8 @@ public class LevelRoleCommand extends AbstractCommand {
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Manage level roles")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -66,19 +69,24 @@ public class LevelRoleCommand extends AbstractCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply(true).queue();
 
         var subCommandGroup = event.getSubcommandGroup();
-        if (subCommandGroup != null && subCommandGroup.equals("settings")) {
-            switch (event.getSubcommandName()) {
+        if (subCommandGroup != null && subCommandGroup.equals("settings"))
+        {
+            switch (event.getSubcommandName())
+            {
                 case "list" -> listSettings(event);
                 case "add_on_rejoin" -> addOnRejoin(event);
                 case "remove_old_roles" -> removeOldRoles(event);
                 case null, default -> throw new IllegalArgumentException();
             }
-        } else {
-            switch (event.getSubcommandName()) {
+        } else
+        {
+            switch (event.getSubcommandName())
+            {
                 case "add" -> add(event);
                 case "remove" -> remove(event);
                 case "list" -> listRoles(event);
@@ -95,7 +103,8 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void listSettings(SlashCommandInteractionEvent event) {
+    private void listSettings(SlashCommandInteractionEvent event)
+    {
         var settings = guildSettingsManager.getSettings(event.getGuild());
         var embedBuilder = new EmbedBuilder()
                 .setTitle("**Level role settings**")
@@ -114,19 +123,22 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void removeOldRoles(SlashCommandInteractionEvent event) {
+    private void removeOldRoles(SlashCommandInteractionEvent event)
+    {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setRemoveOldRoles(status);
 
         var success = guildSettingsManager.setSettings(event.getGuild(), settings);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("Successfully updated level role settings.")).queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to update level role settings.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to update level role settings.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -138,19 +150,22 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void addOnRejoin(SlashCommandInteractionEvent event) {
+    private void addOnRejoin(SlashCommandInteractionEvent event)
+    {
         boolean status = event.getOption("status").getAsBoolean();
 
         var settings = guildSettingsManager.getSettings(event.getGuild()).setAddOnRejoin(status);
 
         var success = guildSettingsManager.setSettings(event.getGuild(), settings);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("Successfully updated level role settings.")).queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to update level role settings.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to update level role settings.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -163,12 +178,14 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void add(SlashCommandInteractionEvent event) {
+    private void add(SlashCommandInteractionEvent event)
+    {
         var role = event.getOption("role").getAsRole();
         int level = event.getOption("level").getAsInt();
 
         var levelRoleOptional = levelRoleDataManager.getLevelRoleData(role, event.getGuild());
-        if (levelRoleOptional.isPresent()) {
+        if (levelRoleOptional.isPresent())
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
                     String.format(
                             "Level role %s already exists (at **Level %d**)",
@@ -179,17 +196,19 @@ public class LevelRoleCommand extends AbstractCommand {
         }
 
         var success = levelRoleDataManager.addLevelRole(event.getGuild(), role, level);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                            Successfully assigned %s to level **%d**.
-                            
-                            Make sure I have permission to add this role to members. Members who are missing this role will receive it the next time they level up (if applicable)."""
-                    .formatted(role.getAsMention(), level))).queue();
-        } else {
-            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to create reaction role.
+                    Successfully assigned %s to level **%d**.
                     
-                    Please contact the bot developer as this is an internal issue."""))
+                    Make sure I have permission to add this role to members. Members who are missing this role will receive it the next time they level up (if applicable)."""
+                    .formatted(role.getAsMention(), level))).queue();
+        } else
+        {
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("""
+                            Oops! Failed to create reaction role.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -201,11 +220,13 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void remove(SlashCommandInteractionEvent event) {
+    private void remove(SlashCommandInteractionEvent event)
+    {
         var role = event.getOption("role").getAsRole();
 
         var levelRoleOptional = levelRoleDataManager.getLevelRoleData(role, event.getGuild());
-        if (levelRoleOptional.isEmpty()) {
+        if (levelRoleOptional.isEmpty())
+        {
             event.getHook().editOriginalEmbeds(
                     EmbedMessage.error("Level role %s doesn't exist and thus can't be deleted.".formatted(role.getAsMention()))
             ).queue();
@@ -213,7 +234,8 @@ public class LevelRoleCommand extends AbstractCommand {
         }
 
         var success = levelRoleDataManager.removeLevelRole(event.getGuild(), role.getIdLong());
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
                     String.format(
                             "Successfully removed %s from the list of level roles. It was pointing to level**%d**.",
@@ -221,11 +243,12 @@ public class LevelRoleCommand extends AbstractCommand {
                             levelRoleOptional.get().level()
                     ))
             ).queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to delete reaction role.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to delete reaction role.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -237,7 +260,8 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void listRoles(SlashCommandInteractionEvent event) {
+    private void listRoles(SlashCommandInteractionEvent event)
+    {
         List<LevelRoleData> levelRoles = levelRoleDataManager.getLevelRoles(event.getGuild()).stream()
                 .sorted(Comparator.comparingLong(LevelRoleData::level))
                 .toList();
@@ -246,8 +270,9 @@ public class LevelRoleCommand extends AbstractCommand {
                 .setTitle("**Level roles**")
                 .setAuthor(event.getGuild().getName(), null, event.getGuild().getIconUrl())
                 .setColor(EmbedColors.primary());
-        
-        for (var levelRole : levelRoles) {
+
+        for (var levelRole : levelRoles)
+        {
             embedBuilder.addField("**__Level " + levelRole.level() + "__**", "<@&" + levelRole.roleID() + ">", true);
         }
 
@@ -261,7 +286,8 @@ public class LevelRoleCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void cleanup(SlashCommandInteractionEvent event) {
+    private void cleanup(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var guildRoles = guild.getRoles().stream()
                 .map(Role::getIdLong)
@@ -270,15 +296,18 @@ public class LevelRoleCommand extends AbstractCommand {
         levelRoleDataManager.getLevelRoles(guild).stream()
                 .map(LevelRoleData::roleID)
                 .filter(levelRoleID -> !guildRoles.contains(levelRoleID))
-                .forEach(invalidLevelRoleID -> {
+                .forEach(invalidLevelRoleID ->
+                {
                     var success = levelRoleDataManager.removeLevelRole(guild, invalidLevelRoleID);
-                    if (success) {
+                    if (success)
+                    {
                         event.getHook().editOriginalEmbeds(EmbedMessage.normal("Successfully removed deleted roles from the list.")).queue();
-                    } else {
+                    } else
+                    {
                         event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                                Oops! Failed to remove deleted roles.
-                                
-                                Please contact the bot developer as this is an internal issue."""))
+                                        Oops! Failed to remove deleted roles.
+                                        
+                                        Please contact the bot developer as this is an internal issue."""))
                                 .queue();
                     }
                 });

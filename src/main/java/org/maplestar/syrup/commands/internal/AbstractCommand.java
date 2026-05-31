@@ -6,7 +6,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 /**
  * A slash command to be registered with JDA and run.
  */
-public abstract class AbstractCommand {
+public abstract class AbstractCommand
+{
     protected final String name;
 
     /**
@@ -14,7 +15,8 @@ public abstract class AbstractCommand {
      *
      * @param name the name of the command, as displayed on Discord
      */
-    public AbstractCommand(String name) {
+    public AbstractCommand(String name)
+    {
         this.name = name;
     }
 
@@ -24,7 +26,8 @@ public abstract class AbstractCommand {
      *
      * @return the name of this command
      */
-    public String name() {
+    public String name()
+    {
         return name;
     }
 

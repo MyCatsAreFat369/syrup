@@ -13,7 +13,8 @@ import java.util.List;
 /**
  * Provides access to the level and XP of users for each guild.
  */
-public class LevelDataManager {
+public class LevelDataManager
+{
     private final Logger logger = LoggerFactory.getLogger(LevelDataManager.class);
     private final DatabaseManager databaseManager;
 
@@ -22,31 +23,38 @@ public class LevelDataManager {
      *
      * @param databaseManager the database manager for database access
      */
-    public LevelDataManager(DatabaseManager databaseManager) {
+    public LevelDataManager(DatabaseManager databaseManager)
+    {
         this.databaseManager = databaseManager;
     }
 
     /**
      * Returns the {@link LevelData} for the user on the provided guild.
      *
-     * @param user the user
+     * @param user  the user
      * @param guild the guild
      * @return the {@link LevelData} for the user. May be the default for new users or on database failure
      */
-    public LevelData getLevelData(User user, Guild guild) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT level, xp FROM Ranks WHERE user_id = ? AND guild_id = ?")) {
+    public LevelData getLevelData(User user, Guild guild)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT level, xp FROM Ranks WHERE user_id = ? AND guild_id = ?"))
+            {
                 statement.setLong(1, user.getIdLong());
                 statement.setLong(2, guild.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                if (resultSet.next()) {
+                if (resultSet.next())
+                {
                     return new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
-                } else {
+                } else
+                {
                     return LevelData.ZERO;
                 }
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't access level data for user {} on guild {}", user.getName(), guild.getId(), exception);
             return LevelData.ZERO;
         }
@@ -55,25 +63,31 @@ public class LevelDataManager {
     /**
      * Returns the {@link RankingData} for the user on the provided guild, which includes a rank relative to other users.
      *
-     * @param user the user
+     * @param user  the user
      * @param guild the guild
      * @return the {@link RankingData} for the user. May be the default for new users or on database failure
      */
-    public RankingData getRankingData(User user, Guild guild) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) WHERE user_id = ?")) {
+    public RankingData getRankingData(User user, Guild guild)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) WHERE user_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, user.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                if (resultSet.next()) {
+                if (resultSet.next())
+                {
                     var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
                     return new RankingData(user.getIdLong(), resultSet.getInt("rank"), levelData);
-                } else {
+                } else
+                {
                     return RankingData.zero(user);
                 }
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't access level data for user {} on guild {}", user.getName(), guild.getId(), exception);
             return RankingData.zero(user);
         }
@@ -88,21 +102,26 @@ public class LevelDataManager {
      * @param guild the guild
      * @return the list of users with their ranks in the entire leaderboard. May be empty or contain any number of entries.
      */
-    public List<RankingData> getEntireLeaderboard(Guild guild) {
+    public List<RankingData> getEntireLeaderboard(Guild guild)
+    {
         List<RankingData> result = new ArrayList<>();
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT user_id, level, xp FROM Ranks WHERE guild_id = ?")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT user_id, level, xp FROM Ranks WHERE guild_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                while (resultSet.next()) {
+                while (resultSet.next())
+                {
                     var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
                     result.add(new RankingData(resultSet.getLong("user_id"), 0, levelData));
                 }
 
                 return result;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't access leaderboard for guild {}", guild.getId(), exception);
             return List.of();
         }
@@ -115,43 +134,52 @@ public class LevelDataManager {
      * If the page exceeds the bounds of the data, it is adjusted automatically
      *
      * @param guild the guild
-     * @param page the page, adjusted automatically to fit the bounds
+     * @param page  the page, adjusted automatically to fit the bounds
      * @return the list of users with their ranks. May be empty or contain less than 10 entries
      */
-    public List<RankingData> getTopUsers(Guild guild, int page) {
+    public List<RankingData> getTopUsers(Guild guild, int page)
+    {
         if (page < 1) page = 1;
 
         List<RankingData> result = new ArrayList<>();
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT user_id, level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC, user_id DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT user_id, level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC, user_id DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, page);
                 statement.setLong(3, guild.getIdLong());
 
                 var resultSet = statement.executeQuery();
-                while (resultSet.next() && result.size() < 10) {
+                while (resultSet.next() && result.size() < 10)
+                {
                     var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
                     result.add(new RankingData(resultSet.getLong("user_id"), resultSet.getInt("rank"), levelData));
                 }
 
                 return result;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't access top users for guild {}", guild.getId(), exception);
             return List.of();
         }
     }
 
-    public int getMaxPage(Guild guild) {
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT ceil(COUNT(*) / 10.0) AS max_page FROM Ranks WHERE guild_id = ?")) {
+    public int getMaxPage(Guild guild)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT ceil(COUNT(*) / 10.0) AS max_page FROM Ranks WHERE guild_id = ?"))
+            {
                 statement.setLong(1, guild.getIdLong());
 
                 var resultSet = statement.executeQuery();
                 resultSet.next();
                 return resultSet.getInt("max_page");
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't check the max page for guild {}", guild.getId(), exception);
             return 1;
         }
@@ -160,23 +188,27 @@ public class LevelDataManager {
     /**
      * Updates the level and XP for the user on the specified guild or inserts them into the database if necessary (upsert).
      *
-     * @param userID the userID of the user
-     * @param guild the guild
+     * @param userID    the userID of the user
+     * @param guild     the guild
      * @param levelData the new {@link LevelData}
      * @return false on database failure, otherwise true
      */
-    public boolean setLevelData(Guild guild, long userID, LevelData levelData) {
+    public boolean setLevelData(Guild guild, long userID, LevelData levelData)
+    {
         if (levelData.level() >= 420) levelData = LevelData.MAX;
 
-        try (var connection = databaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp")) {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp"))
+            {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, userID);
                 statement.setInt(3, levelData.level());
                 statement.setLong(4, levelData.xp());
                 return statement.executeUpdate() == 1;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException exception)
+        {
             logger.error("Couldn't update level data for user {} on guild {}", userID, guild.getId(), exception);
             return false;
         }

@@ -23,7 +23,8 @@ import java.util.Set;
 /**
  * Event listener that's called when the level of a user gets updated.
  */
-public class LevelChangeListener {
+public class LevelChangeListener
+{
     private final Logger logger = LoggerFactory.getLogger(LevelChangeListener.class);
     private final LevelRoleDataManager levelRoleDataManager;
     private final GuildSettingsManager guildSettingsManager;
@@ -34,7 +35,8 @@ public class LevelChangeListener {
      * @param levelRoleDataManager the level role manager
      * @param guildSettingsManager the guild settings manager
      */
-    public LevelChangeListener(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager) {
+    public LevelChangeListener(LevelRoleDataManager levelRoleDataManager, GuildSettingsManager guildSettingsManager)
+    {
         this.levelRoleDataManager = levelRoleDataManager;
         this.guildSettingsManager = guildSettingsManager;
     }
@@ -44,7 +46,8 @@ public class LevelChangeListener {
      *
      * @param event the event that has been fired, see {@link LevelChangeEvent}
      */
-    public void onLevelChange(LevelChangeEvent event) {
+    public void onLevelChange(LevelChangeEvent event)
+    {
         var guild = event.guild();
         var settings = guildSettingsManager.getSettings(guild);
         var roles = levelRoleDataManager.getLevelRoles(guild);
@@ -69,7 +72,8 @@ public class LevelChangeListener {
         Set<Role> removalRoles = new HashSet<>();
 
         // removes ALL old roles (if removeOldRoles)
-        if (settings.removeOldRoles()) {
+        if (settings.removeOldRoles())
+        {
             roles.stream()
                     .map(levelRole -> guild.getRoleById(levelRole.roleID()))
                     .filter(Objects::nonNull)
@@ -82,7 +86,8 @@ public class LevelChangeListener {
         // if the former, this will simply add all of the lower roles or just the max, depending on removeOldRoles
         // if the latter, this will also remove all affected roles that shouldn't be on the user anymore because the level decreased
         // if both... no affected roles are actually affected and lower roles are added.
-        if (affectedRoles.isEmpty() || newLevel < oldLevel) {
+        if (affectedRoles.isEmpty() || newLevel < oldLevel)
+        {
             // either affectedRoles is empty and this does nothing or newLevel is less than oldLevel and
             // we should indeed be removing affectedRoles
             affectedRoles.stream()
@@ -96,7 +101,8 @@ public class LevelChangeListener {
                     .toList();
 
             // add all lower roles because removeOldRoles is false
-            if (!lowerRoles.isEmpty()) {
+            if (!lowerRoles.isEmpty())
+            {
                 newRoles.addAll(getRolesToAdd(guild, settings, lowerRoles));
             }
 
@@ -116,23 +122,27 @@ public class LevelChangeListener {
      * <p>
      * I'm on television!! -maple
      *
-     * @param guild the guild
-     * @param settings the guild's settings
+     * @param guild          the guild
+     * @param settings       the guild's settings
      * @param rolesToProcess quite literally, the roles to process
      * @return a list of roles given the rules explained above. This list should be added to newRoles
      */
-    private List<Role> getRolesToAdd(Guild guild, GuildSettings settings, List<LevelRoleData> rolesToProcess) {
-        if (settings.removeOldRoles()) {
+    private List<Role> getRolesToAdd(Guild guild, GuildSettings settings, List<LevelRoleData> rolesToProcess)
+    {
+        if (settings.removeOldRoles())
+        {
             // get the max lower role level and add that role to member
             var maxLevelRole = rolesToProcess.getFirst();
-            for (var levelRole : rolesToProcess) {
+            for (var levelRole : rolesToProcess)
+            {
                 if (levelRole.level() > maxLevelRole.level()) maxLevelRole = levelRole;
             }
 
             var theRole = guild.getRoleById(maxLevelRole.roleID());
             if (theRole == null) return List.of();
             return List.of(theRole);
-        } else {
+        } else
+        {
             return rolesToProcess.stream()
                     .map(levelRole -> guild.getRoleById(levelRole.roleID()))
                     .filter(Objects::nonNull)
@@ -144,17 +154,20 @@ public class LevelChangeListener {
      * Attempts to add and remove the provided roles to the member on the specified guild.
      * Will only remove roles if they aren't to be added and ignore any roles the user may already have.
      *
-     * @param member the member
-     * @param guild the guild the member is on
-     * @param newRoles the roles that should be added to the member
+     * @param member       the member
+     * @param guild        the guild the member is on
+     * @param newRoles     the roles that should be added to the member
      * @param removalRoles the roles that should be removed from the member
      */
-    private void applyRoles(Member member, Guild guild, Set<Role> newRoles, Set<Role> removalRoles) {
-        try {
+    private void applyRoles(Member member, Guild guild, Set<Role> newRoles, Set<Role> removalRoles)
+    {
+        try
+        {
             removalRoles.removeIf(role -> newRoles.contains(role) || !member.getRoles().contains(role));
             newRoles.removeIf(member.getRoles()::contains);
             guild.modifyMemberRoles(member, newRoles, removalRoles).queue();
-        } catch (InsufficientPermissionException | HierarchyException exception) {
+        } catch (InsufficientPermissionException | HierarchyException exception)
+        {
             logger.warn("Couldn't update roles for user {} on guild {}", member.getUser().getName(), guild.getName(), exception);
         }
     }

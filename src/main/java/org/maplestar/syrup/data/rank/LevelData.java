@@ -4,9 +4,10 @@ package org.maplestar.syrup.data.rank;
  * Represents a user's level and XP in a guild.
  *
  * @param level the level
- * @param xp the XP
+ * @param xp    the XP
  */
-public record LevelData(int level, long xp) {
+public record LevelData(int level, long xp)
+{
     public static final LevelData ZERO = new LevelData(0, 0);
     public static final LevelData MAX = LevelData.ZERO.setLevel(420);
 
@@ -16,7 +17,8 @@ public record LevelData(int level, long xp) {
      * @param xp the XP amount
      * @return a new {@link LevelData} representing the new XP amount
      */
-    public LevelData addXP(long xp) {
+    public LevelData addXP(long xp)
+    {
         var newXp = this.xp + xp;
         var requiredXP = requiredTotalForLevelup(this.level);
         var newLevel = newXp >= requiredXP ? this.level + 1 : this.level;
@@ -29,7 +31,8 @@ public record LevelData(int level, long xp) {
      * @param xp the new XP amount
      * @return a new {@link LevelData} representing the new XP amount
      */
-    public LevelData setXP(long xp) {
+    public LevelData setXP(long xp)
+    {
         if (xp < 100) return new LevelData(0, xp);
 
         int newLevel = xpToLevel(xp);
@@ -42,7 +45,8 @@ public record LevelData(int level, long xp) {
      * @param level the new level
      * @return a new {@link LevelData} representing the new level
      */
-    public LevelData setLevel(int level) {
+    public LevelData setLevel(int level)
+    {
         if (level < 0) return this;
         return new LevelData(level, requiredTotalForLevelup(level - 1));
     }
@@ -55,12 +59,14 @@ public record LevelData(int level, long xp) {
      * @param level the current level
      * @return the amount of XP required
      */
-    public long requiredTotalForLevelup(int level) {
+    public long requiredTotalForLevelup(int level)
+    {
         if (level < 0) return 0;
         return (long) (72L * Math.pow(level, 2) + 50L * level + 100L);
     }
 
-    public long requiredForLevelupTotal() {
+    public long requiredForLevelupTotal()
+    {
         if (level <= 0) return 100;
         return requiredTotalForLevelup(level) - requiredTotalForLevelup(level - 1);
     }
@@ -72,7 +78,8 @@ public record LevelData(int level, long xp) {
      *
      * @return the amount of XP required
      */
-    public long remainingXPForLevelup() {
+    public long remainingXPForLevelup()
+    {
         return requiredTotalForLevelup(level) - xp;
     }
 
@@ -83,7 +90,8 @@ public record LevelData(int level, long xp) {
      *
      * @return the level
      */
-    public int xpToLevel(long xp) {
+    public int xpToLevel(long xp)
+    {
         return (int) Math.floor((-50 + Math.sqrt(2500 - 4 * 72 * (100 - xp))) / (2 * 72)) + 1;
     }
 }

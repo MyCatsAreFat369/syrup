@@ -6,7 +6,8 @@ import java.util.regex.Pattern;
 /**
  * Utility class for dealing with {@link Duration}.
  */
-public class DurationUtils {
+public class DurationUtils
+{
     private static final Pattern durationPattern = Pattern.compile("(\\d+[smhdwy])");
 
     /**
@@ -20,15 +21,18 @@ public class DurationUtils {
      * @return the parsed duration
      * @throws IllegalArgumentException if the provided String couldn't be parsed
      */
-    public static Duration durationStringToMillis(String durationString) throws IllegalArgumentException {
+    public static Duration durationStringToMillis(String durationString) throws IllegalArgumentException
+    {
         var matcher = durationPattern.matcher(durationString.toLowerCase());
         if (!matcher.find()) throw new IllegalArgumentException();
 
         var duration = Duration.ZERO;
-        do {
+        do
+        {
             var group = matcher.group(1);
             var amount = Integer.parseInt(group.substring(0, group.length() - 1));
-            switch (group.toCharArray()[group.length() - 1]) {
+            switch (group.toCharArray()[group.length() - 1])
+            {
                 case 's' -> duration = duration.plusSeconds(amount);
                 case 'm' -> duration = duration.plusMinutes(amount);
                 case 'h' -> duration = duration.plusHours(amount);

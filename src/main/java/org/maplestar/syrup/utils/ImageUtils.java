@@ -5,8 +5,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import org.maplestar.syrup.Main;
 import org.maplestar.syrup.data.rank.RankingData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
@@ -14,44 +17,38 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 
 /**
  * Utility class for generating images via the AWT library.
  */
-public class ImageUtils {
+public class ImageUtils
+{
     private static final String kiwiMaruFont = "Kiwi Maru";
     private static final String notoSansFont = "Noto Sans JP";
+    private static final Logger logger = LoggerFactory.getLogger(ImageUtils.class);
 
     /**
      * Creates an image containing a user's name, rank, level, XP amount, and remaining XP until level-up.
      * Is based on a user's banner or alternatively their avatar.
      *
-     * @param member the member
+     * @param member      the member
      * @param rankingData the member's ranking
      * @return the image in its byte representation
      * @throws IOException if there's a problem fetching the images from Discord or encoding the newly created image
      */
-    public static byte[] generateRankImage(Member member, User user, RankingData rankingData) throws IOException {
+    public static byte[] generateRankImage(Member member, User user, RankingData rankingData) throws IOException
+    {
         // Load the avatar & banner from Discord
-        var profile = user.retrieveProfile().complete();
-        var bannerUrl = profile.getBannerUrl();
-        var accentColor = profile.getAccentColor();
         BufferedImage avatarImage = loadMemberAvatar(member, user, user.getIdLong());
         BufferedImage bannerImage;
 
         // If there's no banner, use a cropped version of the avatar
-        if (bannerUrl != null) {
-            bannerImage = loadImageFromUrl(bannerUrl + "?size=1024");
-        } else {
-            bannerImage = new BufferedImage(1024, 360, BufferedImage.TYPE_INT_ARGB);
-            var g2dBanner = bannerImage.createGraphics();
-            g2dBanner.setColor(accentColor);
-            g2dBanner.fillRect(0, 0, 1024, 360);
-            g2dBanner.dispose();
-        }
+        bannerImage = loadUserBanner(user, user.getIdLong());
 
         BufferedImage preClippedImage = new BufferedImage(1600, 1300, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2dClip = preClippedImage.createGraphics();
@@ -93,9 +90,11 @@ public class ImageUtils {
         // Draw the username and fit it appropriately
         int textX = 50, textY = 880;
         String name;
-        if(member == null) {
+        if (member == null)
+        {
             name = user.getEffectiveName();
-        } else {
+        } else
+        {
             name = member.getEffectiveName();
         }
 
@@ -126,11 +125,14 @@ public class ImageUtils {
         g2dXP.fillRect(0, 0, 1500, 25);
 
         Color xpColor;
-        if (xpRatio <= 0.2) {
+        if (xpRatio <= 0.2)
+        {
             xpColor = new Color(255, 0, 0);
-        } else if (xpRatio <= 0.6) {
+        } else if (xpRatio <= 0.6)
+        {
             xpColor = new Color(255, 165, 0);
-        } else {
+        } else
+        {
             xpColor = new Color(128, 255, 0);
         }
         g2dXP.setColor(xpColor);
@@ -144,7 +146,8 @@ public class ImageUtils {
         g2d.setClip(null);
 
         // Draw XP remaining
-        if (rankingData.levelData().level() < 420) {
+        if (rankingData.levelData().level() < 420)
+        {
             int smallerTextSize = 60;
             g2d.setFont(new Font(notoSansFont, Font.PLAIN, smallerTextSize));
             g2d.setColor(Color.WHITE);
@@ -161,7 +164,8 @@ public class ImageUtils {
     }
 
     public static byte[] generateLeaderboardImage(List<RankingData> rankedUsers, RankingData userRank,
-                                                  Guild guild, int currentPage, int totalPages) throws IOException {
+                                                  Guild guild, int currentPage, int totalPages) throws IOException
+    {
         BufferedImage image = new BufferedImage(2000, 1400, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
 
@@ -173,7 +177,7 @@ public class ImageUtils {
 
         // Set font and size for title appropriately
         String titleText = "Leaderboard for " + guild.getName();
-        int titleFontSize = fitText(titleText, (int) (image.getWidth() * 0.75),  kiwiMaruFont,80, g2d);
+        int titleFontSize = fitText(titleText, (int) (image.getWidth() * 0.75), kiwiMaruFont, 80, g2d);
         g2d.setFont(new Font(kiwiMaruFont, Font.BOLD, titleFontSize));
 
         g2d.setColor(Color.WHITE);
@@ -214,24 +218,29 @@ public class ImageUtils {
                 .toList();
 
         var members = guild.retrieveMembersByIds(ids).get();
-        for (int i = 0; i < rankedUsers.size(); i++) {
+        for (int i = 0; i < rankedUsers.size(); i++)
+        {
             long userID = rankedUsers.get(i).userID();
             double setX = 220 + 784 * Math.floor((i + 0.001) / 5.0);
             double setY = 290 + 160 * (i % 5);
 
             Member member = null;
             User user = guild.getJDA().retrieveUserById(userID).complete();
-            for (var m : members) {
-                if (m.getIdLong() == userID) {
+            for (var m : members)
+            {
+                if (m.getIdLong() == userID)
+                {
                     member = m;
                     break;
                 }
             }
 
             String memberName = "Unknown User (" + userID + ")";
-            if (member != null) {
+            if (member != null)
+            {
                 memberName = member.getEffectiveName();
-            } else if (user != null) {
+            } else if (user != null)
+            {
                 memberName = user.getEffectiveName();
             }
 
@@ -239,14 +248,15 @@ public class ImageUtils {
             g2d.drawImage(generateAvatar(loadMemberAvatar(member, user, userID)), (int) setX - 10, (int) setY - 10, 160, 160, null);
         }
 
-        for (int i = 0; i < rankedUsers.size(); i++) {
+        for (int i = 0; i < rankedUsers.size(); i++)
+        {
             double setX = 220 + 784 * Math.floor((i + 0.001) / 5.0);
             double setY = 290 + 160 * (i % 5);
             var rankImage = generateRankNumberImage(rankedUsers.get(i).rank());
             double scaleFactor2 = 0.6 - 0.25 * (("" + (i + 1)).length() / 5.0);
             g2d.drawImage(rankImage,
-                    (int)setX + 140 - (int) (rankImage.getWidth() * scaleFactor2 / 2),
-                    (int)setY + 100,
+                    (int) setX + 140 - (int) (rankImage.getWidth() * scaleFactor2 / 2),
+                    (int) setY + 100,
                     (int) (rankImage.getWidth() * scaleFactor2),
                     (int) (rankImage.getHeight() * scaleFactor2),
                     null
@@ -268,7 +278,8 @@ public class ImageUtils {
         return outputStream.toByteArray();
     }
 
-    public static BufferedImage generateLeaderboardRankImage(RankingData rankingData, String name, boolean isYou) {
+    public static BufferedImage generateLeaderboardRankImage(RankingData rankingData, String name, boolean isYou)
+    {
         BufferedImage image = new BufferedImage(800, 150, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
 
@@ -283,7 +294,8 @@ public class ImageUtils {
 
         int length = fontMetrics.charsWidth(name.toCharArray(), 0, name.length());
         int maxLength = 550;
-        if (length > maxLength) {
+        if (length > maxLength)
+        {
             if (length > maxLength * 2) length = maxLength * 2;
             fontSize *= maxLength / (double) length;
         }
@@ -295,7 +307,7 @@ public class ImageUtils {
         g2d.setFont(new Font(notoSansFont, Font.PLAIN, 35));
         g2d.drawString("Level " + rankingData.levelData().level(), textX, textY + 55);
         g2d.drawString("|", textX + 200, textY + 55);
-        g2d.drawString(String.format("%,d XP", rankingData.levelData().xp()), textX  + 265, textY + 55);
+        g2d.drawString(String.format("%,d XP", rankingData.levelData().xp()), textX + 265, textY + 55);
 
         // The finishing touches
         RoundRectangle2D.Double roundRect = new RoundRectangle2D.Double(0, 0, image.getWidth(), image.getHeight(), image.getHeight(), image.getHeight());
@@ -311,7 +323,8 @@ public class ImageUtils {
         return imageClipped;
     }
 
-    private static BufferedImage generateAvatar(BufferedImage avatarImage) {
+    private static BufferedImage generateAvatar(BufferedImage avatarImage)
+    {
         BufferedImage image = new BufferedImage(avatarImage.getWidth(), avatarImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
 
@@ -324,7 +337,8 @@ public class ImageUtils {
         return image;
     }
 
-    private static BufferedImage generateRankNumberImage(long rank) {
+    private static BufferedImage generateRankNumberImage(long rank)
+    {
         Font font = new Font(notoSansFont, Font.PLAIN, 100);
 
         BufferedImage bufferedImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
@@ -361,37 +375,76 @@ public class ImageUtils {
         return imageClipped;
     }
 
-    private static BufferedImage loadImageFromUrl(String url) throws IOException {
+    private static BufferedImage loadImageFromUrl(String url) throws IOException
+    {
         var imageURL = URI.create(url).toURL();
-        return ImageIO.read(imageURL);
+        var connection = imageURL.openConnection();
+        var inputStream = connection.getInputStream();
+        return ImageIO.read(inputStream);
     }
 
-    private static BufferedImage loadMemberAvatar(Member member, User user, long userID) throws IOException {
-        if (member == null && user == null) {
+    private static BufferedImage loadMemberAvatar(Member member, User user, long userID) throws IOException
+    {
+        if (member == null && user == null)
+        {
             return loadImageFromUrl("https://cdn.discordapp.com/embed/avatars/" + (userID % 5) + ".png?size=256");
         }
 
         String avatarUrl;
-        if (member == null) {
+        if (member == null)
+        {
             avatarUrl = user.getEffectiveAvatarUrl();
-        } else {
+        } else
+        {
             avatarUrl = member.getEffectiveAvatarUrl();
         }
 
         return loadImageFromUrl(avatarUrl + "?size=256");
     }
 
-    private static BufferedImage loadGuildAvatar(Guild guild) throws IOException {
+    private static BufferedImage loadUserBanner(User user, long userID)
+    {
+        var profile = user.retrieveProfile().useCache(false).complete();
+        var bannerUrl = profile.getBannerUrl();
+        var accentColor = profile.getAccentColor();
+        /// Return banner image if banner URL exists, if that fails or if banner url was null then return a coloured image.
+        if (bannerUrl != null)
+        {
+            try
+            {
+                return loadImageFromUrl(bannerUrl + "?size=1024");
+            } catch(IOException exception)
+            {
+                logger.error("Couldn't fetch banner due to an issue with Discord.", exception);
+            }
+        }
+        return loadColouredBanner(accentColor);
+    }
+
+    private static BufferedImage loadColouredBanner(Color accentColor)
+    {
+        BufferedImage bannerImage = new BufferedImage(1024, 360, BufferedImage.TYPE_INT_ARGB);
+        var g2dBanner = bannerImage.createGraphics();
+        g2dBanner.setColor(accentColor);
+        g2dBanner.fillRect(0, 0, 1024, 360);
+        g2dBanner.dispose();
+        return bannerImage;
+    }
+
+    private static BufferedImage loadGuildAvatar(Guild guild) throws IOException
+    {
         var avatarUrl = guild.getIconUrl();
         return loadImageFromUrl(avatarUrl + "?size=256");
     }
 
-    private static int fitText(String text, int maxWidth, String font, int initialFontSize, Graphics2D g2d) {
+    private static int fitText(String text, int maxWidth, String font, int initialFontSize, Graphics2D g2d)
+    {
         int finalFontSize = initialFontSize;
         g2d.setFont(new Font(font, Font.BOLD, finalFontSize));
         var fontMetrics = g2d.getFontMetrics();
         int length = fontMetrics.charsWidth(text.toCharArray(), 0, text.length());
-        if (length > maxWidth) {
+        if (length > maxWidth)
+        {
             finalFontSize = (int) (finalFontSize * (maxWidth / (double) length));
         }
 

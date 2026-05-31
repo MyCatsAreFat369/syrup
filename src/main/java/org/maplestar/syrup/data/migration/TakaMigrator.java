@@ -13,7 +13,8 @@ import java.util.List;
 /**
  * Migrates Taka's .csv level export files in the "migration" folder to syrup's database.
  */
-public class TakaMigrator {
+public class TakaMigrator
+{
     private final static Logger logger = LoggerFactory.getLogger(TakaMigrator.class);
 
     /**
@@ -21,13 +22,16 @@ public class TakaMigrator {
      *
      * @param databaseManager the database manager
      */
-    public static void migrateTakaFiles(DatabaseManager databaseManager) {
+    public static void migrateTakaFiles(DatabaseManager databaseManager)
+    {
         logger.info("Starting Taka migration...");
 
-        try (var files = Files.walk(Path.of("migration"))) {
+        try (var files = Files.walk(Path.of("migration")))
+        {
             files.filter(path -> path.toFile().getName().endsWith(".csv"))
                     .forEach(path -> migrateFile(path, databaseManager));
-        } catch (IOException exception) {
+        } catch (IOException exception)
+        {
             logger.error("Failed to migrate Taka files", exception);
         }
 
@@ -41,13 +45,15 @@ public class TakaMigrator {
      * This method may take a while to run on larger files and will therefore delay the bot's startup.
      * However, it is run synchronously before any connection to Discord servers to ensure changes from Discord won't prevent the import.
      *
-     * @param path the path of the .csv file
+     * @param path            the path of the .csv file
      * @param databaseManager the database manager
      */
-    private static void migrateFile(Path path, DatabaseManager databaseManager) {
+    private static void migrateFile(Path path, DatabaseManager databaseManager)
+    {
         logger.info("Importing Taka file {}", path);
 
-        try {
+        try
+        {
             List<MigrationData> importData = Files.readAllLines(path).stream()
                     .filter(line -> line.matches("\\d+,\\d+,\\d+"))
                     .map(MigrationData::ofTaka)
@@ -62,18 +68,23 @@ public class TakaMigrator {
             logger.info("Validated data, starting import into database...");
 
             int totalRows = 0;
-            try (var connection = databaseManager.getConnection()) {
-                for (var userData : importData) {
-                    try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = floor((-50 + sqrt(greatest(0, 2500 - 4 * 72 * (100 - (Ranks.xp + Excluded.xp))))) / (2 * 72)) + 1, xp = Ranks.xp + Excluded.xp")) {
+            try (var connection = databaseManager.getConnection())
+            {
+                for (var userData : importData)
+                {
+                    try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = floor((-50 + sqrt(greatest(0, 2500 - 4 * 72 * (100 - (Ranks.xp + Excluded.xp))))) / (2 * 72)) + 1, xp = Ranks.xp + Excluded.xp"))
+                    {
                         statement.setLong(1, Long.parseLong(path.toFile().getName().replace(".csv", "")));
                         statement.setLong(2, userData.userID());
                         statement.setInt(3, userData.level());
                         statement.setLong(4, userData.xp());
 
                         var updatedRows = statement.executeUpdate();
-                        if (updatedRows == 1) {
+                        if (updatedRows == 1)
+                        {
                             totalRows++;
-                        } else {
+                        } else
+                        {
                             logger.error("For user data {}, {} rows (expected: 1) were updated", userData, updatedRows);
                         }
                     }
@@ -83,10 +94,12 @@ public class TakaMigrator {
             logger.info("Migration finished, imported {} of {} user ranks", totalRows, importData.size());
 
             var fileDeletionSuccess = path.toFile().delete();
-            if (!fileDeletionSuccess) {
+            if (!fileDeletionSuccess)
+            {
                 logger.warn("Failed to delete file {}, please remove it manually", path);
             }
-        } catch (Exception exception) {
+        } catch (Exception exception)
+        {
             logger.error("Failed to migrate Taka file {}", path, exception);
         }
     }

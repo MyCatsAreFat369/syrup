@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Scheduler that regularly checks for due reminders.
  */
-public class ReminderExecutor {
+public class ReminderExecutor
+{
     private static final Logger logger = LoggerFactory.getLogger(ReminderExecutor.class);
     private final JDA jda;
     private final ReminderDataManager reminderDataManager;
@@ -23,10 +24,11 @@ public class ReminderExecutor {
     /**
      * Initializes the class.
      *
-     * @param jda the JDA instance
+     * @param jda                 the JDA instance
      * @param reminderDataManager the reminder data manager
      */
-    public ReminderExecutor(JDA jda, ReminderDataManager reminderDataManager) {
+    public ReminderExecutor(JDA jda, ReminderDataManager reminderDataManager)
+    {
         this.jda = jda;
         this.reminderDataManager = reminderDataManager;
     }
@@ -35,25 +37,31 @@ public class ReminderExecutor {
      * Starts the scheduler. May be called before JDA is fully initialized.
      * Automatically sends reminder messages if necessary.
      */
-    public void init() {
-        try {
+    public void init()
+    {
+        try
+        {
             jda.awaitReady();
-        } catch (InterruptedException exception) {
+        } catch (InterruptedException exception)
+        {
             throw new RuntimeException(exception);
         }
 
         var executor = Executors.newSingleThreadScheduledExecutor();
 
-        executor.scheduleAtFixedRate(() -> {
+        executor.scheduleAtFixedRate(() ->
+        {
             var reminders = reminderDataManager.getSortedReminders();
             var currentTime = LocalDateTime.now();
 
-            while (!reminders.isEmpty() && currentTime.isAfter(reminders.first().time())) {
+            while (!reminders.isEmpty() && currentTime.isAfter(reminders.first().time()))
+            {
                 var reminder = reminders.removeFirst();
                 logger.info("Sending reminder: {}", reminder);
 
                 var channel = jda.getChannelById(MessageChannel.class, reminder.channelID());
-                if (channel == null) {
+                if (channel == null)
+                {
                     logger.info("Channel was deleted, deleting reminder...");
                     reminderDataManager.deleteReminder(reminder);
                     continue;
@@ -62,11 +70,13 @@ public class ReminderExecutor {
                 var message = reminder.message();
                 if (message == null) message = "Ping pong!";
 
-                try {
+                try
+                {
                     channel.sendMessage("<@" + reminder.userID() + ">")
                             .setEmbeds(EmbedMessage.normalWithTitle("Reminder", message))
                             .queue();
-                } catch (InsufficientPermissionException exception) {
+                } catch (InsufficientPermissionException exception)
+                {
                     logger.warn("Insufficient permissions", exception);
                 }
 

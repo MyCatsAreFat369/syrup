@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The /rank command for displaying the rank of a user.
  */
-public class RankCommand extends AbstractCommand {
+public class RankCommand extends AbstractCommand
+{
     private final Logger logger = LoggerFactory.getLogger(RankCommand.class);
     private final LevelDataManager levelDataManager;
 
@@ -28,14 +29,16 @@ public class RankCommand extends AbstractCommand {
      *
      * @param levelDataManager the level data manager
      */
-    public RankCommand(LevelDataManager levelDataManager) {
+    public RankCommand(LevelDataManager levelDataManager)
+    {
         super("rank");
 
         this.levelDataManager = levelDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "View your rank")
                 .setContexts(InteractionContextType.GUILD)
                 .addOption(OptionType.USER, "user", "The user", false);
@@ -55,30 +58,35 @@ public class RankCommand extends AbstractCommand {
      * @see RankingData#zero(User)
      */
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply().queue();
 
         var member = event.getOption("user", event.getMember(), OptionMapping::getAsMember);
         var user = event.getOption("user", event.getMember().getUser(), OptionMapping::getAsUser);
         var rankingData = levelDataManager.getRankingData(user, event.getGuild());
 
-        try {
+        try
+        {
             var imageBytes = ImageUtils.generateRankImage(member, user, rankingData);
             event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, user.getName() + ".png")).queue();
-        } catch (Exception exception) {
+        } catch (Exception exception)
+        {
             logger.error("Couldn't attach rank file", exception);
             String username;
-            if (member == null) {
+            if (member == null)
+            {
                 username = user.getEffectiveName();
-            } else {
+            } else
+            {
                 username = member.getEffectiveName();
             }
 
             event.getHook().editOriginalEmbeds(EmbedMessage.error(
                     """
-                    *Something went wrong while generating your rank image, but here you go:*
-                    
-                    **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP is required to level up.""".formatted(
+                            *Something went wrong while generating your rank image, but here you go:*
+                            
+                            **%s** is **Rank %s** with **Level %d** (**%,d XP**). %,d more XP is required to level up.""".formatted(
                             username,
                             rankingData.isInvalid() ? "Invalid" : "#" + rankingData.rank(),
                             rankingData.levelData().level(),

@@ -15,7 +15,8 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Event listener that's called when a message is sent and handles XP updates.
  */
-public class ExpGainListener extends ListenerAdapter {
+public class ExpGainListener extends ListenerAdapter
+{
     private final LevelDataManager levelDataManager;
     private final BlockDataManager blockDataManager;
     private final XPBlockDataManager xpBlockDataManager;
@@ -25,11 +26,12 @@ public class ExpGainListener extends ListenerAdapter {
     /**
      * Initializes the class.
      *
-     * @param levelDataManager the level data manager
-     * @param blockDataManager the block data manager
+     * @param levelDataManager    the level data manager
+     * @param blockDataManager    the block data manager
      * @param levelChangeListener the level change listener, to notify when a user levels up
      */
-    public ExpGainListener(LevelDataManager levelDataManager, BlockDataManager blockDataManager, XPBlockDataManager xpBlockDataManager, LevelChangeListener levelChangeListener) {
+    public ExpGainListener(LevelDataManager levelDataManager, BlockDataManager blockDataManager, XPBlockDataManager xpBlockDataManager, LevelChangeListener levelChangeListener)
+    {
         this.levelDataManager = levelDataManager;
         this.blockDataManager = blockDataManager;
         this.xpBlockDataManager = xpBlockDataManager;
@@ -45,7 +47,8 @@ public class ExpGainListener extends ListenerAdapter {
      * @see BlockDataManager
      */
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
+    public void onMessageReceived(MessageReceivedEvent event)
+    {
         if (event.getAuthor().isBot()) return;
         if (!event.isFromGuild()) return;
 
@@ -66,7 +69,8 @@ public class ExpGainListener extends ListenerAdapter {
         var newLevelData = oldLevelData.addXP(addXP);
         levelDataManager.setLevelData(guild, user.getIdLong(), newLevelData);
 
-        if (newLevelData.level() != oldLevelData.level()) {
+        if (newLevelData.level() != oldLevelData.level())
+        {
             levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, oldLevelData, newLevelData));
         }
     }

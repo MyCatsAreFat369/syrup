@@ -9,10 +9,11 @@ import org.maplestar.syrup.data.rank.LevelData;
  * <p>
  * Note: Although the level will typically increase, it is possible for it to decrease.
  *
- * @param guild the guild the user leveled up in
- * @param user the user
+ * @param guild        the guild the user leveled up in
+ * @param user         the user
  * @param oldLevelData the user's previous {@link LevelData}
  * @param newLevelData the user's current {@link LevelData}
  */
-public record LevelChangeEvent(Guild guild, User user, LevelData oldLevelData, LevelData newLevelData) {
+public record LevelChangeEvent(Guild guild, User user, LevelData oldLevelData, LevelData newLevelData)
+{
 }

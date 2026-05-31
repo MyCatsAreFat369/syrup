@@ -21,7 +21,8 @@ import java.time.ZoneId;
 /**
  * The /xp command for excluding channels from the rank system.
  */
-public class XPBlockUserCommand extends AbstractCommand {
+public class XPBlockUserCommand extends AbstractCommand
+{
     private final XPBlockDataManager xpBlockDataManager;
 
     /**
@@ -29,14 +30,16 @@ public class XPBlockUserCommand extends AbstractCommand {
      *
      * @param xpBlockDataManager the block data manager
      */
-    public XPBlockUserCommand(XPBlockDataManager xpBlockDataManager) {
+    public XPBlockUserCommand(XPBlockDataManager xpBlockDataManager)
+    {
         super("xp-user");
 
         this.xpBlockDataManager = xpBlockDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Deals with XP gain for users")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -51,10 +54,12 @@ public class XPBlockUserCommand extends AbstractCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply(true).queue();
 
-        switch(event.getSubcommandName()) {
+        switch (event.getSubcommandName())
+        {
             case "list" -> list(event);
             case "block" -> block(event);
             case "unblock" -> unblock(event);
@@ -69,7 +74,8 @@ public class XPBlockUserCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void list(SlashCommandInteractionEvent event) {
+    private void list(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         int page = event.getOption("page").getAsInt();
 
@@ -79,13 +85,14 @@ public class XPBlockUserCommand extends AbstractCommand {
 
         var xpBlockedUsers = xpBlockDataManager.getXPBlocks(guild, page);
 
-        for(var xpBlockData : xpBlockedUsers) {
+        for (var xpBlockData : xpBlockedUsers)
+        {
             Member member = guild.retrieveMemberById(xpBlockData.userID()).complete(); // TODO: lacks asynchronous
             ZoneId zoneId = ZoneId.systemDefault();
             long epoch = xpBlockData.time().atZone(zoneId).toEpochSecond();
             embedBuilder.addField(member.getUser().getName(),
                     "**User ID:** " + member.getId() + "\n" +
-                    "**Time:** " + "<t:" + epoch + ">", false);
+                            "**Time:** " + "<t:" + epoch + ">", false);
         }
 
         event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
@@ -98,34 +105,39 @@ public class XPBlockUserCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void block(SlashCommandInteractionEvent event) {
+    private void block(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var member = event.getOption("user").getAsMember();
 
-        if(member == null) {
+        if (member == null)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("User does not exist.")).queue();
             return;
         }
 
         boolean isBlocked = xpBlockDataManager.isBlocked(guild, member);
-        if (isBlocked) {
+        if (isBlocked)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is already in the blocklist!")).queue();
             return;
         }
 
         XPBlockData xpBlockData = new XPBlockData(member.getIdLong(), LocalDateTime.now());
         boolean success = xpBlockDataManager.setBlocked(guild, xpBlockData, true);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This user has been **added** to the XP blocklist!
-                
-                They will no longer gain xp by chatting."""))
+                            This user has been **added** to the XP blocklist!
+                            
+                            They will no longer gain xp by chatting."""))
                     .queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to block this user.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to block this user.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }
@@ -137,34 +149,39 @@ public class XPBlockUserCommand extends AbstractCommand {
      *
      * @param event the command event
      */
-    private void unblock(SlashCommandInteractionEvent event) {
+    private void unblock(SlashCommandInteractionEvent event)
+    {
         var guild = event.getGuild();
         var member = event.getOption("user").getAsMember();
 
-        if(member == null) {
+        if (member == null)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("User does not exist.")).queue();
             return;
         }
 
         boolean isBlocked = xpBlockDataManager.isBlocked(guild, member);
-        if (!isBlocked) {
+        if (!isBlocked)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("This user is not in the XP blocklist!")).queue();
             return;
         }
 
         XPBlockData xpBlockData = new XPBlockData(member.getIdLong(), LocalDateTime.now());
         boolean success = xpBlockDataManager.setBlocked(guild, xpBlockData, false);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
-                This user has been **removed** from the XP blocklist!
-                
-                They will now gain xp by chatting."""))
+                            This user has been **removed** from the XP blocklist!
+                            
+                            They will now gain xp by chatting."""))
                     .queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to unblock this user.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to unblock this user.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }

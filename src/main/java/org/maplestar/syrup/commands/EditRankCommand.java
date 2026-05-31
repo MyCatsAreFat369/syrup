@@ -18,17 +18,19 @@ import org.maplestar.syrup.utils.EmbedMessage;
 /**
  * The /editrank command for editing a user's level or xp.
  */
-public class EditRankCommand extends AbstractCommand {
+public class EditRankCommand extends AbstractCommand
+{
     private final LevelDataManager levelDataManager;
     private final LevelChangeListener levelChangeListener;
 
     /**
      * Initializes the command.
      *
-     * @param levelDataManager the level data manager
+     * @param levelDataManager    the level data manager
      * @param levelChangeListener the level change listener, to notify of potential level changes
      */
-    public EditRankCommand(LevelDataManager levelDataManager, LevelChangeListener levelChangeListener) {
+    public EditRankCommand(LevelDataManager levelDataManager, LevelChangeListener levelChangeListener)
+    {
         super("editrank");
 
         this.levelDataManager = levelDataManager;
@@ -36,7 +38,8 @@ public class EditRankCommand extends AbstractCommand {
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Edit a user's rank")
                 .setContexts(InteractionContextType.GUILD)
                 .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ADMINISTRATOR))
@@ -57,14 +60,16 @@ public class EditRankCommand extends AbstractCommand {
      * @param event the command event
      */
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply(true).queue();
 
         var user = event.getOption("user").getAsUser();
         var type = RankCommandType.valueOf(event.getOption("type").getAsString());
         var value = event.getOption("value").getAsInt();
 
-        if (user.isBot()) {
+        if (user.isBot())
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("Oops! Bot accounts can't have a rank.")).queue();
             return;
         }
@@ -72,27 +77,32 @@ public class EditRankCommand extends AbstractCommand {
         var oldLevelData = levelDataManager.getLevelData(user, event.getGuild());
         LevelData newLevelData = null;
 
-        if (type == RankCommandType.XP) {
+        if (type == RankCommandType.XP)
+        {
             newLevelData = oldLevelData.setXP(value);
-        } else if (type == RankCommandType.LEVEL) {
+        } else if (type == RankCommandType.LEVEL)
+        {
             newLevelData = oldLevelData.setLevel(value);
         }
 
-        if (newLevelData.level() >= 420) {
+        if (newLevelData.level() >= 420)
+        {
             newLevelData = LevelData.MAX;
         }
 
         var success = levelDataManager.setLevelData(event.getGuild(), user.getIdLong(), newLevelData);
-        if (!success) {
+        if (!success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to edit the user's rank.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to edit the user's rank.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
             return;
         }
 
-        if (newLevelData.level() != oldLevelData.level()) {
+        if (newLevelData.level() != oldLevelData.level())
+        {
             levelChangeListener.onLevelChange(new LevelChangeEvent(event.getGuild(), user, oldLevelData, newLevelData));
         }
 
@@ -109,7 +119,8 @@ public class EditRankCommand extends AbstractCommand {
     /**
      * Represents the type argument of the /rank edit subcommand.
      */
-    private enum RankCommandType {
+    private enum RankCommandType
+    {
         LEVEL, XP
     }
 }

@@ -9,21 +9,24 @@ import java.time.OffsetDateTime;
 /**
  * Represents a reminder that has been created by a user.
  *
- * @param id the reminder's ID. May be set to any number when initializing this object
- * @param userID the user ID
- * @param time the date and time this reminder is due at
- * @param message the message of the reminder, may be null
+ * @param id        the reminder's ID. May be set to any number when initializing this object
+ * @param userID    the user ID
+ * @param time      the date and time this reminder is due at
+ * @param message   the message of the reminder, may be null
  * @param channelID the channel this reminder was created in
  * @see org.maplestar.syrup.commands.RemindMeCommand
  * @see org.maplestar.syrup.executors.ReminderExecutor
  */
-public record Reminder(int id, long userID, LocalDateTime time, @Nullable String message, long channelID) implements Comparable<Reminder> {
+public record Reminder(int id, long userID, LocalDateTime time, @Nullable String message,
+                       long channelID) implements Comparable<Reminder>
+{
     /**
      * Converts this reminder's end time to epoch seconds.
      *
      * @return the time in epoch seconds
      */
-    public long timeInSeconds() {
+    public long timeInSeconds()
+    {
         return timeInMillis() / 1000;
     }
 
@@ -32,7 +35,8 @@ public record Reminder(int id, long userID, LocalDateTime time, @Nullable String
      *
      * @return the time in milliseconds
      */
-    public long timeInMillis() {
+    public long timeInMillis()
+    {
         return time.toInstant(OffsetDateTime.now().getOffset()).toEpochMilli();
     }
 
@@ -42,12 +46,14 @@ public record Reminder(int id, long userID, LocalDateTime time, @Nullable String
      * @param id the new ID
      * @return the new reminder
      */
-    public Reminder withID(int id) {
+    public Reminder withID(int id)
+    {
         return new Reminder(id, userID, time, message, channelID);
     }
 
     @Override
-    public int compareTo(@NotNull Reminder reminder) {
+    public int compareTo(@NotNull Reminder reminder)
+    {
         return time.compareTo(reminder.time);
     }
 }

@@ -20,7 +20,8 @@ import java.util.concurrent.Executors;
 /**
  * The /leaderboard command for comparing ranks within a guild.
  */
-public class LeaderboardCommand extends AbstractCommand {
+public class LeaderboardCommand extends AbstractCommand
+{
     private final Logger logger = LoggerFactory.getLogger(LeaderboardCommand.class);
     private final LevelDataManager levelDataManager;
     private final ExecutorService executorService;
@@ -30,7 +31,8 @@ public class LeaderboardCommand extends AbstractCommand {
      *
      * @param levelDataManager the level data manager
      */
-    public LeaderboardCommand(LevelDataManager levelDataManager) {
+    public LeaderboardCommand(LevelDataManager levelDataManager)
+    {
         super("leaderboard");
 
         this.levelDataManager = levelDataManager;
@@ -38,7 +40,8 @@ public class LeaderboardCommand extends AbstractCommand {
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "View the leaderboard!")
                 .setContexts(InteractionContextType.GUILD)
                 .addOption(OptionType.INTEGER, "page", "The page", false);
@@ -54,10 +57,12 @@ public class LeaderboardCommand extends AbstractCommand {
      * @param event the command event
      */
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply().queue();
 
-        executorService.submit(() -> {
+        executorService.submit(() ->
+        {
             int page = event.getOption("page", 1, OptionMapping::getAsInt);
             int totalPages = levelDataManager.getMaxPage(event.getGuild());
             if (page < 1) page = 1;
@@ -68,10 +73,12 @@ public class LeaderboardCommand extends AbstractCommand {
             var userRank = levelDataManager.getRankingData(event.getUser(), guild);
             var member = event.getMember();
 
-            try {
+            try
+            {
                 var imageBytes = ImageUtils.generateLeaderboardImage(rankedUsers, userRank, guild, page, totalPages);
                 event.getHook().editOriginalAttachments(AttachedFile.fromData(imageBytes, member.getUser().getName() + ".png")).queue();
-            } catch (Exception exception) {
+            } catch (Exception exception)
+            {
                 logger.error("Couldn't attach leaderboard file", exception);
                 String desc = String.format(
                         "You currently have **%,d** XP (Level **%d**)" + (userRank.isInvalid() ? "" : " and are in position **#%,d**"),

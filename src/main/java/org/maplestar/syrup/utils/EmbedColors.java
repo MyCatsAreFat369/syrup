@@ -5,7 +5,8 @@ import java.awt.*;
 /**
  * Utility class with color constants for Discord embeds.
  */
-public class EmbedColors {
+public class EmbedColors
+{
     private static final Color primaryColor = new Color(167, 230, 112);
 
     /**
@@ -13,7 +14,8 @@ public class EmbedColors {
      *
      * @return the primary color
      */
-    public static Color primary() {
+    public static Color primary()
+    {
         return primaryColor;
     }
 
@@ -22,7 +24,8 @@ public class EmbedColors {
      *
      * @return the error color
      */
-    public static Color error() {
+    public static Color error()
+    {
         return Color.RED;
     }
 }

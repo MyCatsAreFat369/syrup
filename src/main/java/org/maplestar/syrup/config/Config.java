@@ -5,10 +5,12 @@ import io.github.cdimascio.dotenv.Dotenv;
 /**
  * Provides access to static configuration options for the application, such as database credentials.
  */
-public class Config {
+public class Config
+{
     private final Dotenv dotenv;
 
-    private Config() {
+    private Config()
+    {
         this.dotenv = Dotenv.load();
     }
 
@@ -17,7 +19,8 @@ public class Config {
      *
      * @return a new config instance
      */
-    public static Config load() {
+    public static Config load()
+    {
         return new Config();
     }
 
@@ -26,7 +29,8 @@ public class Config {
      *
      * @return the bot token
      */
-    public String botToken() {
+    public String botToken()
+    {
         return dotenv.get("TOKEN");
     }
 
@@ -35,7 +39,8 @@ public class Config {
      *
      * @return the database host
      */
-    public String databaseHost() {
+    public String databaseHost()
+    {
         return dotenv.get("DATABASE_HOST");
     }
 
@@ -44,7 +49,8 @@ public class Config {
      *
      * @return the database name
      */
-    public String databaseName() {
+    public String databaseName()
+    {
         return dotenv.get("DATABASE_NAME");
     }
 
@@ -53,7 +59,8 @@ public class Config {
      *
      * @return the database username
      */
-    public String databaseUsername() {
+    public String databaseUsername()
+    {
         return dotenv.get("DATABASE_USERNAME");
     }
 
@@ -62,7 +69,8 @@ public class Config {
      *
      * @return the database password
      */
-    public String databasePassword() {
+    public String databasePassword()
+    {
         return dotenv.get("DATABASE_PASSWORD");
     }
 }

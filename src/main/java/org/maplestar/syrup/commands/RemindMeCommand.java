@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 /**
  * The /remindme command for creating reminders.
  */
-public class RemindMeCommand extends AbstractCommand {
+public class RemindMeCommand extends AbstractCommand
+{
     private final ReminderDataManager reminderDataManager;
 
     /**
@@ -25,51 +26,59 @@ public class RemindMeCommand extends AbstractCommand {
      *
      * @param reminderDataManager the reminder data manager
      */
-    public RemindMeCommand(ReminderDataManager reminderDataManager) {
+    public RemindMeCommand(ReminderDataManager reminderDataManager)
+    {
         super("remindme");
 
         this.reminderDataManager = reminderDataManager;
     }
 
     @Override
-    public SlashCommandData getSlashCommandData() {
+    public SlashCommandData getSlashCommandData()
+    {
         return Commands.slash(name, "Create a reminder for yourself")
                 .addOption(OptionType.STRING, "time", "The time", true)
                 .addOption(OptionType.STRING, "message", "A custom message");
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
+    public void execute(SlashCommandInteractionEvent event)
+    {
         event.deferReply().queue();
 
         var user = event.getUser();
         var timeString = event.getOption("time").getAsString();
         var message = event.getOption("message", null, OptionMapping::getAsString);
 
-        if (reminderDataManager.getUserReminderCount(user) >= 100) {
+        if (reminderDataManager.getUserReminderCount(user) >= 100)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                            Whoops! You've got... 100 pending remindme's!
-                            Run ``/remindme-nuke`` to ~~clear~~ nuke all of them.
-                            Choose wisely..."""
+                    Whoops! You've got... 100 pending remindme's!
+                    Run ``/remindme-nuke`` to ~~clear~~ nuke all of them.
+                    Choose wisely..."""
             )).queue();
             return;
         }
 
         Duration duration;
-        try {
+        try
+        {
             duration = DurationUtils.durationStringToMillis(timeString);
-        } catch (IllegalArgumentException exception) {
+        } catch (IllegalArgumentException exception)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Not a valid time string! Valid options are: y, w, d, h, m, s.
-                    
-                    *Some examples of a valid time are "30s" or "5d 12h"*
-                    """))
+                            Not a valid time string! Valid options are: y, w, d, h, m, s.
+                            
+                            *Some examples of a valid time are "30s" or "5d 12h"*
+                            """))
                     .queue();
             return;
         }
 
-        if (event.isFromGuild()) {
-            if (!event.getGuildChannel().canTalk(event.getGuild().getSelfMember())) {
+        if (event.isFromGuild())
+        {
+            if (!event.getGuildChannel().canTalk(event.getGuild().getSelfMember()))
+            {
                 event.getHook().editOriginalEmbeds(EmbedMessage.error("I can't message you in this channel, please fix the permissions!")).queue();
                 return;
             }
@@ -84,13 +93,15 @@ public class RemindMeCommand extends AbstractCommand {
         );
 
         boolean success = reminderDataManager.addReminder(reminder);
-        if (success) {
+        if (success)
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("Got it! I'll remind you on <t:" + reminder.timeInSeconds() + "> in this channel.")).queue();
-        } else {
+        } else
+        {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
-                    Oops! Failed to create the reminder.
-                    
-                    Please contact the bot developer as this is an internal issue."""))
+                            Oops! Failed to create the reminder.
+                            
+                            Please contact the bot developer as this is an internal issue."""))
                     .queue();
         }
     }

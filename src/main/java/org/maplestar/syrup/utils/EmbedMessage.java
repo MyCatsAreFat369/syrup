@@ -6,14 +6,16 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 /**
  * Utility class which provides an easy way to build embeds from Strings.
  */
-public class EmbedMessage {
+public class EmbedMessage
+{
     /**
      * Creates an embed to be used for messages that don't represent an error.
      *
      * @param text the content of the embed
      * @return the embed
      */
-    public static MessageEmbed normal(String text) {
+    public static MessageEmbed normal(String text)
+    {
         return new EmbedBuilder()
                 .setColor(EmbedColors.primary())
                 .setDescription(text)
@@ -25,10 +27,11 @@ public class EmbedMessage {
      * Contains a title
      *
      * @param title the title of the embed
-     * @param text the content of the embed
+     * @param text  the content of the embed
      * @return the embed
      */
-    public static MessageEmbed normalWithTitle(String title, String text) {
+    public static MessageEmbed normalWithTitle(String title, String text)
+    {
         return new EmbedBuilder()
                 .setColor(EmbedColors.primary())
                 .setTitle(title)
@@ -42,7 +45,8 @@ public class EmbedMessage {
      * @param text the content of the embed
      * @return the embed
      */
-    public static MessageEmbed error(String text) {
+    public static MessageEmbed error(String text)
+    {
         return new EmbedBuilder()
                 .setColor(EmbedColors.error())
                 .setDescription(text)
