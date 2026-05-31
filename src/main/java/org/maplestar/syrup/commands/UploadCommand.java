@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.AttachedFile;
 import org.maplestar.syrup.commands.internal.AbstractCommand;
+import org.maplestar.syrup.data.rank.LevelData;
 import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.utils.EmbedMessage;
 import org.maplestar.syrup.utils.LeaderboardDataToCSVUtils;
@@ -24,6 +25,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The /download command for downloading guild data.
@@ -101,13 +104,14 @@ public class UploadCommand extends AbstractCommand
                 .thenAccept(file ->
                 {
                     var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(file);
+                    List<LevelData> levelData = new ArrayList<>();
                     while(!rankingDataList.isEmpty())
                     {
                         var rankingData = rankingDataList.removeFirst();
-                        var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
-                        if(user == null) continue;
+                        //var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
+                        //if(user == null) continue;
                         if(rankingData.levelData().xp() == 0) continue;
-                        levelDataManager.setLevelData(user, event.getGuild(), rankingData.levelData());
+                        levelDataManager.setLevelData(guild, rankingData.userID(), rankingData.levelData());
                     }
                     logger.info("Saved file to path {}", file.getAbsolutePath());
                     event.getChannel().sendMessageEmbeds(EmbedMessage.normal("Uploaded the data!"))

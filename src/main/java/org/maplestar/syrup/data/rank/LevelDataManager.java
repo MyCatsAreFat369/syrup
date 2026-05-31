@@ -160,24 +160,24 @@ public class LevelDataManager {
     /**
      * Updates the level and XP for the user on the specified guild or inserts them into the database if necessary (upsert).
      *
-     * @param user the user
+     * @param userID the userID of the user
      * @param guild the guild
      * @param levelData the new {@link LevelData}
      * @return false on database failure, otherwise true
      */
-    public boolean setLevelData(User user, Guild guild, LevelData levelData) {
+    public boolean setLevelData(Guild guild, long userID, LevelData levelData) {
         if (levelData.level() >= 420) levelData = LevelData.MAX;
 
         try (var connection = databaseManager.getConnection()) {
             try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp")) {
                 statement.setLong(1, guild.getIdLong());
-                statement.setLong(2, user.getIdLong());
+                statement.setLong(2, userID);
                 statement.setInt(3, levelData.level());
                 statement.setLong(4, levelData.xp());
                 return statement.executeUpdate() == 1;
             }
         } catch (SQLException exception) {
-            logger.error("Couldn't update level data for user {} on guild {}", user.getName(), guild.getId(), exception);
+            logger.error("Couldn't update level data for user {} on guild {}", userID, guild.getId(), exception);
             return false;
         }
     }

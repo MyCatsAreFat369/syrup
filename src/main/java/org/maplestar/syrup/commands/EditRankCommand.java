@@ -82,7 +82,7 @@ public class EditRankCommand extends AbstractCommand {
             newLevelData = LevelData.MAX;
         }
 
-        var success = levelDataManager.setLevelData(user, event.getGuild(), newLevelData);
+        var success = levelDataManager.setLevelData(event.getGuild(), user.getIdLong(), newLevelData);
         if (!success) {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""
                     Oops! Failed to edit the user's rank.
