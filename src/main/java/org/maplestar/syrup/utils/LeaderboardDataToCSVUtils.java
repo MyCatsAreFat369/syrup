@@ -1,5 +1,6 @@
 package org.maplestar.syrup.utils;
 
+import net.dv8tion.jda.api.entities.Guild;
 import org.maplestar.syrup.data.rank.LevelData;
 import org.maplestar.syrup.data.rank.RankingData;
 
@@ -31,7 +32,7 @@ public class LeaderboardDataToCSVUtils
         return contents.getBytes();
     }
 
-    public static List<RankingData> createDataFromCSVFile(File file)
+    public static List<RankingData> createDataFromCSVFile(Guild guild, File file)
     {
         List<RankingData> result = new ArrayList<>();
         try (Scanner myReader = new Scanner(file))
@@ -41,7 +42,7 @@ public class LeaderboardDataToCSVUtils
                 String data = myReader.nextLine();
                 String[] dataSplit = data.split(";");
                 RankingData rankingData = new RankingData(Long.parseLong(dataSplit[0]), 0,
-                        new LevelData(Integer.parseInt(dataSplit[1]), Integer.parseInt(dataSplit[2])));
+                        new LevelData(guild.getIdLong(), Integer.parseInt(dataSplit[1]), Integer.parseInt(dataSplit[2])));
                 result.add(rankingData);
             }
             return result;

@@ -123,8 +123,8 @@ public class XPBlockUserCommand extends AbstractCommand
             return;
         }
 
-        XPBlockData xpBlockData = new XPBlockData(member.getIdLong(), LocalDateTime.now());
-        boolean success = xpBlockDataManager.setBlocked(guild, xpBlockData, true);
+        XPBlockData xpBlockData = new XPBlockData(guild.getIdLong(), member.getIdLong(), LocalDateTime.now());
+        boolean success = xpBlockDataManager.setBlocked(xpBlockData, true);
         if (success)
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""
@@ -167,8 +167,8 @@ public class XPBlockUserCommand extends AbstractCommand
             return;
         }
 
-        XPBlockData xpBlockData = new XPBlockData(member.getIdLong(), LocalDateTime.now());
-        boolean success = xpBlockDataManager.setBlocked(guild, xpBlockData, false);
+        XPBlockData xpBlockData = new XPBlockData(guild.getIdLong(), member.getIdLong(), LocalDateTime.now());
+        boolean success = xpBlockDataManager.setBlocked(xpBlockData, false);
         if (success)
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.normal("""

@@ -60,6 +60,37 @@ public class ReminderDataManager
         }
     }
 
+    public List<Reminder> getRemindersForDataRequest(long userID)
+    {
+        List<Reminder> result = new ArrayList<>();
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT * FROM Reminders WHERE user_id = ? ORDER BY time"))
+            {
+                statement.setLong(1, userID);
+
+                var resultSet = statement.executeQuery();
+                while (resultSet.next())
+                {
+                    Reminder reminder = new Reminder(
+                            resultSet.getInt("id"),
+                            resultSet.getLong("user_id"),
+                            resultSet.getTimestamp("time").toLocalDateTime(),
+                            resultSet.getString("message"),
+                            resultSet.getLong("channel_id")
+                    );
+                    result.add(reminder);
+                }
+
+                return result;
+            }
+        } catch (SQLException exception)
+        {
+            logger.error("Couldn't request reminder data for user {}", userID, exception);
+            return List.of();
+        }
+    }
+
     /**
      * Returns the reminder with the specified ID.
      * Empty if the reminder doesn't exist or already expired.

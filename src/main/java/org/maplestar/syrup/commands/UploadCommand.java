@@ -104,10 +104,11 @@ public class UploadCommand extends AbstractCommand
         }
 
         String mainPath = Path.of("temp").toAbsolutePath().toString();
-        attachment.getProxy().downloadToFile(new File(mainPath + "/" + attachment.getFileName()))
+        File f = new File(mainPath + "/" + attachment.getFileName());
+        attachment.getProxy().downloadToFile(f)
                 .thenAccept(file ->
                 {
-                    var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(file);
+                    var rankingDataList = LeaderboardDataToCSVUtils.createDataFromCSVFile(guild, file);
                     List<LevelData> levelData = new ArrayList<>();
                     while (!rankingDataList.isEmpty())
                     {
@@ -115,14 +116,35 @@ public class UploadCommand extends AbstractCommand
                         //var user = event.getJDA().retrieveUserById(rankingData.userID()).complete();
                         //if(user == null) continue;
                         if (rankingData.levelData().xp() == 0) continue;
-                        levelDataManager.setLevelData(guild, rankingData.userID(), rankingData.levelData());
+                        levelDataManager.setLevelData(rankingData.userID(), rankingData.levelData());
                     }
                     logger.info("Saved file to path {}", file.getAbsolutePath());
                     event.getChannel().sendMessageEmbeds(EmbedMessage.normal("Uploaded the data!"))
                             .queue();
+
+                    deleteTempFile(f);
                 });
 
         event.getHook().editOriginalEmbeds(EmbedMessage.normal("Gotcha! I'll upload this data into the server, just give me a moment!"))
-                .queue();
+                .queue(
+
+                );
+    }
+
+    private void deleteTempFile(File f)
+    {
+        try
+        {
+            if(f.delete())
+            {
+                logger.info("Successfully deleted temporary data request pack");
+            } else
+            {
+                logger.info("Couldn't delete temporary data request pack.");
+            }
+        } catch(SecurityException exception)
+        {
+            logger.error("Couldn't delete temporary data request pack", exception);
+        }
     }
 }

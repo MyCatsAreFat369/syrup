@@ -143,4 +143,23 @@ public class LevelRoleDataManager
             return false;
         }
     }
+
+    public boolean clearLevelRoles(Guild guild)
+    {
+        try(var connection = databaseManager.getConnection())
+        {
+            try(var statement = connection.prepareStatement("DELETE FROM LevelRoles WHERE guild_id = ?"))
+            {
+                statement.setLong(1, guild.getIdLong());
+
+                statement.executeUpdate();
+            }
+        } catch(SQLException exception)
+        {
+            logger.error("Couldn't clear level roles for guild {}", guild.getIdLong(), exception);
+            return false;
+        }
+
+        return true;
+    }
 }

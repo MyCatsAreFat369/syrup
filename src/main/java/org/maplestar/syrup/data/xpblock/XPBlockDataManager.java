@@ -77,7 +77,7 @@ public class XPBlockDataManager
                 var resultSet = statement.executeQuery();
                 while (resultSet.next() && xpBlockedUsers.size() < 5)
                 {
-                    XPBlockData xpBlockData = new XPBlockData(resultSet.getLong("user_id"), resultSet.getTimestamp("time").toLocalDateTime());
+                    XPBlockData xpBlockData = new XPBlockData(resultSet.getLong("guild_id"), resultSet.getLong("user_id"), resultSet.getTimestamp("time").toLocalDateTime());
                     xpBlockedUsers.add(xpBlockData);
                 }
             }
@@ -91,49 +91,97 @@ public class XPBlockDataManager
     }
 
     /**
+     * The XPBlockData of a single user in all guilds for their data request
+     * @param userID
+     * @return the XPBlockData of a single user
+     */
+    public List<XPBlockData> getXPBlockForDataRequest(long userID)
+    {
+        List<XPBlockData> xpBlockList = new ArrayList<>();
+
+        try(var connection = databaseManager.getConnection())
+        {
+            try(var statement = connection.prepareStatement("SELECT * FROM BlockedUsers WHERE user_id = ?"))
+            {
+                statement.setLong(1, userID);
+
+                var resultSet = statement.executeQuery();
+                while(resultSet.next())
+                {
+                    XPBlockData xpBlockData = new XPBlockData(resultSet.getLong("guild_id"), resultSet.getLong("user_id"), resultSet.getTimestamp("time").toLocalDateTime());
+                    xpBlockList.add(xpBlockData);
+                }
+                return xpBlockList;
+            }
+        } catch(SQLException exception)
+        {
+            logger.error("Couldn't request xp block data for user {}", userID, exception);
+            return List.of();
+        }
+    }
+
+    /**
      * Updates the block status of the provided channel in the guild.
      *
-     * @param guild       the guild
      * @param xpBlockData the channel's ID (the channel may no longer exist in the Discord guild)
      * @param blocked     true if XP gain should be disabled in the provided channel, otherwise false
      * @return false if the update was unsuccessful or on database failure, otherwise true
      */
-    public boolean setBlocked(Guild guild, XPBlockData xpBlockData, boolean blocked)
+    public boolean setBlocked(XPBlockData xpBlockData, boolean blocked)
     {
         try (var connection = databaseManager.getConnection())
         {
             if (blocked)
             {
-                return block(guild, xpBlockData, connection);
+                return block(xpBlockData, connection);
             } else
             {
-                return unblock(guild, xpBlockData.userID(), connection);
+                return unblock(xpBlockData, connection);
             }
         } catch (SQLException exception)
         {
-            logger.info("Couldn't change xp block status of user {} for guild {}", xpBlockData.userID(), guild.getName());
+            logger.info("Couldn't change xp block status of user {} for guild {}", xpBlockData.userID(), xpBlockData.guildID());
             return false;
         }
     }
 
-    private boolean block(Guild guild, XPBlockData xpBlockData, Connection connection) throws SQLException
+    private boolean block(XPBlockData xpBlockData, Connection connection) throws SQLException
     {
         try (var statement = connection.prepareStatement("INSERT INTO BlockedUsers (guild_id, user_id, time) VALUES (?, ?, ?) ON CONFLICT (guild_id, user_id) DO NOTHING"))
         {
-            statement.setLong(1, guild.getIdLong());
+            statement.setLong(1, xpBlockData.guildID());
             statement.setLong(2, xpBlockData.userID());
             statement.setTimestamp(3, new Timestamp(xpBlockData.timeInMillis()));
             return statement.executeUpdate() == 1;
         }
     }
 
-    private boolean unblock(Guild guild, long userID, Connection connection) throws SQLException
+    private boolean unblock(XPBlockData xpBlockData, Connection connection) throws SQLException
     {
         try (var statement = connection.prepareStatement("DELETE FROM BlockedUsers WHERE guild_id = ? AND user_id = ?"))
         {
-            statement.setLong(1, guild.getIdLong());
-            statement.setLong(2, userID);
+            statement.setLong(1, xpBlockData.guildID());
+            statement.setLong(2, xpBlockData.userID());
             return statement.executeUpdate() == 1;
         }
+    }
+
+    public boolean clearBlocks(Guild guild)
+    {
+        try(var connection = databaseManager.getConnection())
+        {
+            try(var statement = connection.prepareStatement("DELETE FROM BlockedUsers WHERE guild_id = ?"))
+            {
+                statement.setLong(1, guild.getIdLong());
+
+                statement.executeUpdate();
+            }
+        } catch(SQLException exception)
+        {
+            logger.error("Couldn't clear blocked users for guild {}", guild.getIdLong(), exception);
+            return false;
+        }
+
+        return true;
     }
 }

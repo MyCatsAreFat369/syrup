@@ -62,7 +62,10 @@ public class CommandManager extends ListenerAdapter
         String guildName = "DMs";
         if (event.isFromGuild()) guildName = event.getGuild().getName();
 
-        logger.info("Received command {} from {} in {}", event.getCommandString(), event.getUser().getName(), guildName);
+        if(!event.getName().equals("remindme"))
+        {
+            logger.info("Received command {} from {} in {}", event.getCommandString(), event.getUser().getName(), guildName);
+        }
 
         commands.stream()
                 .filter(command -> command.name().equals(event.getName()))

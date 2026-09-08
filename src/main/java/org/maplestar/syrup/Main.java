@@ -15,9 +15,7 @@ import org.maplestar.syrup.data.reminder.ReminderDataManager;
 import org.maplestar.syrup.data.settings.GuildSettingsManager;
 import org.maplestar.syrup.data.xpblock.XPBlockDataManager;
 import org.maplestar.syrup.executors.ReminderExecutor;
-import org.maplestar.syrup.listener.ExpGainListener;
-import org.maplestar.syrup.listener.GuildMemberJoinListener;
-import org.maplestar.syrup.listener.LevelChangeListener;
+import org.maplestar.syrup.listener.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +36,8 @@ public class Main
     private static LevelChangeListener levelChangeListener;
     private static ReminderDataManager reminderDataManager;
 
+    private static Config config;
+
     /**
      * The entry point of the app.
      *
@@ -47,7 +47,7 @@ public class Main
     {
         loadFonts();
 
-        var config = Config.load();
+        config = Config.load();
 
         var databaseManager = new DatabaseManager(config);
         TakaMigrator.migrateTakaFiles(databaseManager);
@@ -67,7 +67,10 @@ public class Main
                 .addEventListeners(
                         commandManager,
                         new ExpGainListener(levelDataManager, blockDataManager, xpBlockDataManager, levelChangeListener),
-                        new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener, levelRoleDataManager)
+                        new GuildMemberJoinListener(guildSettingsManager, levelDataManager, levelChangeListener, levelRoleDataManager),
+                        new ButtonListener(levelDataManager, xpBlockDataManager, reminderDataManager, config),
+                        new ModalListener(levelDataManager),
+                        new GuildLeaveListener(blockDataManager, levelRoleDataManager, guildSettingsManager, xpBlockDataManager)
                 )
                 .build();
 
@@ -101,6 +104,7 @@ public class Main
         commandManager.registerCommand(new RemindMeCommand(reminderDataManager));
         commandManager.registerCommand(new XPBlockChannelCommand(blockDataManager));
         commandManager.registerCommand(new XPBlockUserCommand(xpBlockDataManager));
+        commandManager.registerCommand(new RequestDataCommand(levelDataManager, xpBlockDataManager, reminderDataManager, config));
         return commandManager;
     }
 

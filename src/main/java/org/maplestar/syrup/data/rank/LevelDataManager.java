@@ -29,6 +29,35 @@ public class LevelDataManager
     }
 
     /**
+     * The LevelData of a single user in all their guilds for their data request pack
+     * @param userID The user who is running the request data command
+     * @return The LevelData of that user in all guilds
+     */
+    public List<LevelData> getLevelDataForDataRequest(long userID)
+    {
+        List<LevelData> levelDataList = new ArrayList<>();
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("SELECT * FROM Ranks WHERE user_id = ?"))
+            {
+                statement.setLong(1, userID);
+
+                var resultSet = statement.executeQuery();
+                while(resultSet.next())
+                {
+                    LevelData levelData = new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
+                    levelDataList.add(levelData);
+                }
+                return levelDataList;
+            }
+        } catch (SQLException exception)
+        {
+            logger.error("Couldn't request level data for user {}", userID);
+            return List.of();
+        }
+    }
+
+    /**
      * Returns the {@link LevelData} for the user on the provided guild.
      *
      * @param user  the user
@@ -39,7 +68,7 @@ public class LevelDataManager
     {
         try (var connection = databaseManager.getConnection())
         {
-            try (var statement = connection.prepareStatement("SELECT level, xp FROM Ranks WHERE user_id = ? AND guild_id = ?"))
+            try (var statement = connection.prepareStatement("SELECT * FROM Ranks WHERE user_id = ? AND guild_id = ?"))
             {
                 statement.setLong(1, user.getIdLong());
                 statement.setLong(2, guild.getIdLong());
@@ -47,7 +76,7 @@ public class LevelDataManager
                 var resultSet = statement.executeQuery();
                 if (resultSet.next())
                 {
-                    return new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
+                    return new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
                 } else
                 {
                     return LevelData.ZERO;
@@ -79,7 +108,7 @@ public class LevelDataManager
                 var resultSet = statement.executeQuery();
                 if (resultSet.next())
                 {
-                    var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
+                    var levelData = new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
                     return new RankingData(user.getIdLong(), resultSet.getInt("rank"), levelData);
                 } else
                 {
@@ -114,7 +143,7 @@ public class LevelDataManager
                 var resultSet = statement.executeQuery();
                 while (resultSet.next())
                 {
-                    var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
+                    var levelData = new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
                     result.add(new RankingData(resultSet.getLong("user_id"), 0, levelData));
                 }
 
@@ -153,7 +182,7 @@ public class LevelDataManager
                 var resultSet = statement.executeQuery();
                 while (resultSet.next() && result.size() < 10)
                 {
-                    var levelData = new LevelData(resultSet.getInt("level"), resultSet.getLong("xp"));
+                    var levelData = new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
                     result.add(new RankingData(resultSet.getLong("user_id"), resultSet.getInt("rank"), levelData));
                 }
 
@@ -189,11 +218,10 @@ public class LevelDataManager
      * Updates the level and XP for the user on the specified guild or inserts them into the database if necessary (upsert).
      *
      * @param userID    the userID of the user
-     * @param guild     the guild
      * @param levelData the new {@link LevelData}
      * @return false on database failure, otherwise true
      */
-    public boolean setLevelData(Guild guild, long userID, LevelData levelData)
+    public boolean setLevelData(long userID, LevelData levelData)
     {
         if (levelData.level() >= 420) levelData = LevelData.MAX;
 
@@ -201,7 +229,7 @@ public class LevelDataManager
         {
             try (var statement = connection.prepareStatement("INSERT INTO Ranks (guild_id, user_id, level, xp) VALUES (?, ?, ?, ?) ON CONFLICT (guild_id, user_id) DO UPDATE SET level = EXCLUDED.level, xp = EXCLUDED.xp"))
             {
-                statement.setLong(1, guild.getIdLong());
+                statement.setLong(1, levelData.guildID());
                 statement.setLong(2, userID);
                 statement.setInt(3, levelData.level());
                 statement.setLong(4, levelData.xp());
@@ -209,8 +237,28 @@ public class LevelDataManager
             }
         } catch (SQLException exception)
         {
-            logger.error("Couldn't update level data for user {} on guild {}", userID, guild.getId(), exception);
+            logger.error("Couldn't update level data for user {} on guild {}", userID, levelData.guildID(), exception);
             return false;
         }
+    }
+
+    public boolean deleteLevelDataAtRequest(long guildID, long userID)
+    {
+        try(var connection = databaseManager.getConnection())
+        {
+            try(var statement = connection.prepareStatement("DELETE FROM Ranks WHERE guild_id = ? AND user_id = ?"))
+            {
+                statement.setLong(1, guildID);
+                statement.setLong(2, userID);
+
+                statement.executeUpdate();
+            }
+        } catch(SQLException exception)
+        {
+            logger.error("Couldn't process data deletion for guild {} and user {}", guildID, userID);
+            return false;
+        }
+
+        return true;
     }
 }

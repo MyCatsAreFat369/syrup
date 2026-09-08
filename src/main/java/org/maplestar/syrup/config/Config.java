@@ -73,4 +73,6 @@ public class Config
     {
         return dotenv.get("DATABASE_PASSWORD");
     }
+
+    public String privacyPolicyURL() {return dotenv.get("PRIVACY_POLICY_URL");}
 }

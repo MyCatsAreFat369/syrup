@@ -90,7 +90,7 @@ public class EditRankCommand extends AbstractCommand
             newLevelData = LevelData.MAX;
         }
 
-        var success = levelDataManager.setLevelData(event.getGuild(), user.getIdLong(), newLevelData);
+        var success = levelDataManager.setLevelData(user.getIdLong(), newLevelData);
         if (!success)
         {
             event.getHook().editOriginalEmbeds(EmbedMessage.error("""

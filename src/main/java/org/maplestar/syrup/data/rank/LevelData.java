@@ -6,10 +6,15 @@ package org.maplestar.syrup.data.rank;
  * @param level the level
  * @param xp    the XP
  */
-public record LevelData(int level, long xp)
+public record LevelData(long guildID, int level, long xp)
 {
-    public static final LevelData ZERO = new LevelData(0, 0);
+    public static final LevelData ZERO = new LevelData(-1, 0, 0);
     public static final LevelData MAX = LevelData.ZERO.setLevel(420);
+
+    public boolean isDefault()
+    {
+        return this.equals(ZERO);
+    }
 
     /**
      * Adds the specified amount of XP and recalculates the level if necessary.
@@ -22,7 +27,7 @@ public record LevelData(int level, long xp)
         var newXp = this.xp + xp;
         var requiredXP = requiredTotalForLevelup(this.level);
         var newLevel = newXp >= requiredXP ? this.level + 1 : this.level;
-        return new LevelData(newLevel, newXp);
+        return new LevelData(this.guildID, newLevel, newXp);
     }
 
     /**
@@ -33,10 +38,10 @@ public record LevelData(int level, long xp)
      */
     public LevelData setXP(long xp)
     {
-        if (xp < 100) return new LevelData(0, xp);
+        if (xp < 100) return new LevelData(this.guildID, 0, xp);
 
         int newLevel = xpToLevel(xp);
-        return new LevelData(newLevel, xp);
+        return new LevelData(this.guildID, newLevel, xp);
     }
 
     /**
@@ -48,7 +53,7 @@ public record LevelData(int level, long xp)
     public LevelData setLevel(int level)
     {
         if (level < 0) return this;
-        return new LevelData(level, requiredTotalForLevelup(level - 1));
+        return new LevelData(this.guildID, level, requiredTotalForLevelup(level - 1));
     }
 
     /**

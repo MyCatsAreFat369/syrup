@@ -131,4 +131,23 @@ public class BlockDataManager
             return statement.executeUpdate() == 1;
         }
     }
+
+    public boolean clearBlocks(Guild guild)
+    {
+        try (var connection = databaseManager.getConnection())
+        {
+            try (var statement = connection.prepareStatement("DELETE FROM BlockedChannels WHERE guild_id = ?"))
+            {
+                statement.setLong(1, guild.getIdLong());
+
+                statement.executeUpdate();
+            }
+        } catch (SQLException exception)
+        {
+            logger.error("Couldn't clear channel blocks for guild {}", guild.getName(), exception);
+            return false;
+        }
+
+        return true;
+    }
 }

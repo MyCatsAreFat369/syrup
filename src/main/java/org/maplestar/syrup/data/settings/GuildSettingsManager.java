@@ -79,4 +79,23 @@ public class GuildSettingsManager
             return false;
         }
     }
+
+    public boolean clearGuildSettings(Guild guild)
+    {
+        try(var connection = databaseManager.getConnection())
+        {
+            try(var statement = connection.prepareStatement("DELETE FROM GuildSettings WHERE guild_id = ?"))
+            {
+                statement.setLong(1, guild.getIdLong());
+
+                statement.executeUpdate();
+            }
+        } catch(SQLException exception)
+        {
+            logger.error("Couldn't clear guild settings for guild {}", guild.getIdLong(), exception);
+            return false;
+        }
+
+        return true;
+    }
 }
