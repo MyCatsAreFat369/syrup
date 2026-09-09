@@ -8,6 +8,8 @@ import org.maplestar.syrup.data.rank.LevelDataManager;
 import org.maplestar.syrup.data.xpblock.XPBlockDataManager;
 import org.maplestar.syrup.listener.event.LevelChangeEvent;
 import org.maplestar.syrup.utils.CooldownProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,6 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ExpGainListener extends ListenerAdapter
 {
+    private static final Logger logger = LoggerFactory.getLogger(ExpGainListener.class);
     private final LevelDataManager levelDataManager;
     private final BlockDataManager blockDataManager;
     private final XPBlockDataManager xpBlockDataManager;
@@ -64,11 +67,14 @@ public class ExpGainListener extends ListenerAdapter
         var rand = ThreadLocalRandom.current();
         int addXP = rand.nextInt(15, 31);
         var oldLevelData = levelDataManager.getLevelData(user, guild);
+        if(oldLevelData.isDefault()) return; // We don't want to be setting their XP to zero on SQL error
         if (oldLevelData.level() >= 420) return;
 
         var newLevelData = oldLevelData.addXP(addXP);
-        levelDataManager.setLevelData(user.getIdLong(), newLevelData);
+        boolean success = levelDataManager.setLevelData(user.getIdLong(), newLevelData);
 
+        logger.info("old guild id is {}", oldLevelData.guildID());
+        logger.info("guild id is {}", newLevelData.guildID());
         if (newLevelData.level() != oldLevelData.level())
         {
             levelChangeListener.onLevelChange(new LevelChangeEvent(guild, user, oldLevelData, newLevelData));

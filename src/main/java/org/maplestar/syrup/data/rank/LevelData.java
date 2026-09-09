@@ -16,6 +16,8 @@ public record LevelData(long guildID, int level, long xp)
         return this.equals(ZERO);
     }
 
+    public static LevelData zero(long guildID) {return new LevelData(guildID, 0, 0);}
+
     /**
      * Adds the specified amount of XP and recalculates the level if necessary.
      *

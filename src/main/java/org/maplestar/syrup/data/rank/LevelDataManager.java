@@ -79,7 +79,7 @@ public class LevelDataManager
                     return new LevelData(resultSet.getLong("guild_id"), resultSet.getInt("level"), resultSet.getLong("xp"));
                 } else
                 {
-                    return LevelData.ZERO;
+                    return LevelData.zero(guild.getIdLong());
                 }
             }
         } catch (SQLException exception)
@@ -100,7 +100,7 @@ public class LevelDataManager
     {
         try (var connection = databaseManager.getConnection())
         {
-            try (var statement = connection.prepareStatement("SELECT level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) WHERE user_id = ?"))
+            try (var statement = connection.prepareStatement("SELECT * FROM (SELECT *, rank() OVER (ORDER BY xp DESC) AS rank FROM Ranks WHERE guild_id = ?) WHERE user_id = ?"))
             {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, user.getIdLong());
@@ -112,7 +112,7 @@ public class LevelDataManager
                     return new RankingData(user.getIdLong(), resultSet.getInt("rank"), levelData);
                 } else
                 {
-                    return RankingData.zero(user);
+                    return RankingData.zero(user, guild);
                 }
             }
         } catch (SQLException exception)
@@ -136,7 +136,7 @@ public class LevelDataManager
         List<RankingData> result = new ArrayList<>();
         try (var connection = databaseManager.getConnection())
         {
-            try (var statement = connection.prepareStatement("SELECT user_id, level, xp FROM Ranks WHERE guild_id = ?"))
+            try (var statement = connection.prepareStatement("SELECT * FROM Ranks WHERE guild_id = ?"))
             {
                 statement.setLong(1, guild.getIdLong());
 
@@ -173,7 +173,7 @@ public class LevelDataManager
         List<RankingData> result = new ArrayList<>();
         try (var connection = databaseManager.getConnection())
         {
-            try (var statement = connection.prepareStatement("SELECT user_id, level, xp, rank FROM (SELECT *, rank() OVER (ORDER BY xp DESC, user_id DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))"))
+            try (var statement = connection.prepareStatement("SELECT * FROM (SELECT *, rank() OVER (ORDER BY xp DESC, user_id DESC) AS rank FROM Ranks WHERE guild_id = ?) LIMIT 10 OFFSET least((? - 1) * 10, greatest(0, ceil((SELECT count(*) FROM Ranks WHERE guild_id = ?) / 10) * 10))"))
             {
                 statement.setLong(1, guild.getIdLong());
                 statement.setLong(2, page);

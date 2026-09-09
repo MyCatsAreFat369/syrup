@@ -119,7 +119,7 @@ public class XPBlockUserCommand extends AbstractCommand
         boolean isBlocked = xpBlockDataManager.isBlocked(guild, member);
         if (isBlocked)
         {
-            event.getHook().editOriginalEmbeds(EmbedMessage.error("This channel is already in the blocklist!")).queue();
+            event.getHook().editOriginalEmbeds(EmbedMessage.error("This user is already in the blocklist!")).queue();
             return;
         }
 
