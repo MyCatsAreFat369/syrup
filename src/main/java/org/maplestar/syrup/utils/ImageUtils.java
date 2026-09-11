@@ -399,7 +399,7 @@ public class ImageUtils
             avatarUrl = member.getEffectiveAvatarUrl();
         }
 
-        return loadImageFromUrl(avatarUrl + "?size=256");
+        return loadImageFromUrl(getSanitizedURL(avatarUrl));
     }
 
     private static BufferedImage loadUserBanner(User user, long userID)
@@ -434,7 +434,17 @@ public class ImageUtils
     private static BufferedImage loadGuildAvatar(Guild guild) throws IOException
     {
         var avatarUrl = guild.getIconUrl();
-        return loadImageFromUrl(avatarUrl + "?size=256");
+        return loadImageFromUrl(getSanitizedURL(avatarUrl));
+    }
+
+    private static String getSanitizedURL(String avatarUrl)
+    {
+        String params = "?size=256";
+        if(avatarUrl.contains("?"))
+            params = "&size=256";
+        if(avatarUrl.contains("webp"))
+            avatarUrl = avatarUrl.replace("webp", "gif");
+        return avatarUrl + params;
     }
 
     private static int fitText(String text, int maxWidth, String font, int initialFontSize, Graphics2D g2d)
